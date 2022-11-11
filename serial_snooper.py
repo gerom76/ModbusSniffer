@@ -1,5 +1,4 @@
 import logging
-import sys
 #import pymodbus
 #from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets

@@ -1,23 +1,13 @@
 import logging
 import sys
-#import pymodbus
-#from pymodbus.transaction import ModbusRtuFramer
-#from pymodbus.utilities import hexlify_packets
-#from binascii import b2a_hex
-from time import sleep
-
-import serial
-from pymodbus.factory import ClientDecoder, ServerDecoder
-from pymodbus.transaction import ModbusRtuFramer
-
 from common.smartLogger import configure_handler
 from serial_snooper import SerialSnooper
 
-logging.basicConfig(filename='modbus_sniffer.log',filemode='w', level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 file_handler = configure_handler()
 logger = logging.getLogger()
 logger.addHandler(file_handler)
-#logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
 if __name__ == "__main__":
     baud = 9600
