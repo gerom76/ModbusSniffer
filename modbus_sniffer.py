@@ -1,14 +1,15 @@
-import serial
-from pymodbus.factory import ClientDecoder
-from pymodbus.factory import ServerDecoder
-from pymodbus.transaction import ModbusRtuFramer
+import logging
+import sys
 #import pymodbus
 #from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets
 #from binascii import b2a_hex
 from time import sleep
-import sys
-import logging
+
+import serial
+from pymodbus.factory import ClientDecoder, ServerDecoder
+from pymodbus.transaction import ModbusRtuFramer
+
 FORMAT = ('%(asctime)-15s %(threadName)-15s'
           ' %(levelname)-8s %(module)-15s:%(lineno)-8s %(message)s')
 logging.basicConfig(format=FORMAT)
@@ -89,18 +90,17 @@ class SerialSnooper:
             print("Check Client")
             self.client_framer.processIncomingPacket(data, self.client_packet_callback, unit=None, single=True)
         except (IndexError, TypeError,KeyError) as e:
-            #print(e)
+            print(e)
             pass
         try:
             print("Check Server")
             self.server_framer.processIncomingPacket(data, self.server_packet_callback, unit=None, single=True)
             pass
         except (IndexError, TypeError,KeyError) as e:
-            #print(e)
+            print(e)
             pass
-
-    def read(self):
-        self.process(self.read_raw())
+    def logx(self,  *values: object,):
+         print(values)
 
 if __name__ == "__main__":
     baud = 9600
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         pass
     with SerialSnooper(port, baud) as ss:
         while True:
-            data = ss.read_raw()
+            data = ss.read_raw(8)
             if len(data):
                 print(data)
             response = ss.process(data)
