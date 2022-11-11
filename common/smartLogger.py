@@ -8,7 +8,7 @@ import logging.handlers
 def configure_handler():
     # Create handlers
     file_handler = logging.handlers.RotatingFileHandler(
-        'modbus_sniffer.log', maxBytes=1000000, backupCount=3)
+        'logs/modbus_sniffer.log', maxBytes=1000000, backupCount=3)
     # Set handler log level
     file_handler.setLevel(logging.DEBUG)
     # Create formatters
@@ -20,3 +20,4 @@ def configure_handler():
     file_handler.setFormatter(file_format)
 
     return file_handler
+
