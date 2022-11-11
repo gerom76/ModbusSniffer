@@ -44,41 +44,41 @@ class SerialSnooper:
         arg = 0
         for msg in args:
             func_name = str(type(msg)).split('.')[-1].strip("'><").replace("Request", "")
-            print("Master-> ID: {}, Function: {}: {}".format(msg.unit_id, func_name, msg.function_code), end=" ")
+            self.log_wrapper("Master-> ID: {}, Function: {}: {}".format(msg.unit_id, func_name, msg.function_code), end=" ")
             try:
-                print("Address: {}".format(msg.address), end=" ")
+                self.log_wrapper("Address: {}".format(msg.address), end=" ")
             except AttributeError:
                 pass
             try:
-                print("Count: {}".format(msg.count), end=" ")
+                self.log_wrapper("Count: {}".format(msg.count), end=" ")
             except AttributeError:
                 pass
             try:
-                print("Data: {}".format(msg.values), end=" ")
+                self.log_wrapper("Data: {}".format(msg.values), end=" ")
             except AttributeError:
                 pass
             arg += 1
-            print('{}/{}\n'.format(arg, len(args)), end="")
+            self.log_wrapper('{}/{}\n'.format(arg, len(args)), end="")
 
     def client_packet_callback(self, *args, **kwargs):
         arg = 0
         for msg in args:
             func_name = str(type(msg)).split('.')[-1].strip("'><").replace("Request", "")
-            print("Slave-> ID: {}, Function: {}: {}".format(msg.unit_id, func_name, msg.function_code), end=" ")
+            self.log_wrapper("Slave-> ID: {}, Function: {}: {}".format(msg.unit_id, func_name, msg.function_code), end=" ")
             try:
-                print("Address: {}".format(msg.address), end=" ")
+                self.log_wrapper("Address: {}".format(msg.address), end=" ")
             except AttributeError:
                 pass
             try:
-                print("Count: {}".format(msg.count), end=" ")
+                self.log_wrapper("Count: {}".format(msg.count), end=" ")
             except AttributeError:
                 pass
             try:
-                print("Data: {}".format(msg.values), end=" ")
+                self.log_wrapper("Data: {}".format(msg.values), end=" ")
             except AttributeError:
                 pass
             arg += 1
-            print('{}/{}\n'.format(arg, len(args)), end="")
+            self.log_wrapper('{}/{}\n'.format(arg, len(args)), end="")
 
     def read_raw(self, n=16):
         return self.connection.read(n)
@@ -87,20 +87,21 @@ class SerialSnooper:
         if len(data) <= 0:
             return
         try:
-            print("Check Client")
+            self.log_wrapper("Check Client")
             self.client_framer.processIncomingPacket(data, self.client_packet_callback, unit=None, single=True)
         except (IndexError, TypeError,KeyError) as e:
-            print(e)
+            self.log_wrapper(e)
             pass
         try:
-            print("Check Server")
+            self.log_wrapper("Check Server")
             self.server_framer.processIncomingPacket(data, self.server_packet_callback, unit=None, single=True)
             pass
         except (IndexError, TypeError,KeyError) as e:
-            print(e)
+            self.log_wrapper(e)
             pass
-    def logx(self,  *values: object,):
-         print(values)
+
+    def log_wrapper(self,  *values: object, sep: str=None , end: str=None ,):
+        print(values, sep, end)
 
 if __name__ == "__main__":
     baud = 9600
@@ -115,9 +116,9 @@ if __name__ == "__main__":
         pass
     with SerialSnooper(port, baud) as ss:
         while True:
-            data = ss.read_raw(8)
+            data = ss.read_raw(16)
             if len(data):
-                print(data)
+                ss.log_wrapper(data)
             response = ss.process(data)
             #sleep(float(1)/ss.baud)
     sys.exit(0)
