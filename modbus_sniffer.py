@@ -27,8 +27,9 @@ if __name__ == "__main__":
     with SerialSnooper(port, baud) as ss:
         while True:
             data = ss.read_raw(16)
-            # if len(data):
+            if len(data):
             #     logger.debug(data)
-            response = ss.process(data)
+                ss.process(data)
+                logger.info(f"Statistics: {ss.get_statistics()}")
             # sleep(float(1)/ss.baud)
     sys.exit(0)

@@ -1,18 +1,22 @@
 import logging
+
+import serial
+from pymodbus.factory import ClientDecoder, ServerDecoder
+from pymodbus.transaction import ModbusRtuFramer
+
 #import pymodbus
 #from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets
 #from binascii import b2a_hex
 # from time import sleep
 
-import serial
-from pymodbus.factory import ClientDecoder, ServerDecoder
-from pymodbus.transaction import ModbusRtuFramer
 
 logger = logging.getLogger()
 class SerialSnooper:
     kMaxReadSize = 128
     kByteLength = 10
+    processedFramesCounter = 0
+    interceptedResponseFramesCounter = 0
 
     def __init__(self, port, baud=9600):
         logger.debug('SerialSnooper.__init__')
@@ -58,6 +62,7 @@ class SerialSnooper:
             logger.info('{}/{}\n'.format(arg, len(args)))
 
     def client_packet_callback(self, *args, **kwargs):
+        self.interceptedResponseFramesCounter += 1
         arg = 0
         for msg in args:
             func_name = str(type(msg)).split(
@@ -85,6 +90,7 @@ class SerialSnooper:
     def process(self, data):
         if len(data) <= 0:
             return
+        self.processedFramesCounter += 1
         try:
             logger.debug("Check Client")
             self.client_framer.processIncomingPacket(
@@ -100,4 +106,9 @@ class SerialSnooper:
         except (IndexError, TypeError, KeyError) as e:
             logger.debug(e)
             pass
+
+    def get_statistics(self):
+        if (self.processedFramesCounter==0):
+            return 0
+        return (1 - (self.processedFramesCounter - self.interceptedResponseFramesCounter) / self.processedFramesCounter) * 100
 
