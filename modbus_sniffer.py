@@ -1,14 +1,17 @@
 import logging
+
 from common.smartLogger import setup_logger
+
 setup_logger(__package__)
 
 import sys
+
 from serial_snooper import SerialSnooper
 
 logger = logging.getLogger()
 
 if __name__ == "__main__":
-    logger.info("__main__.Begin")
+    logger.debug("__main__.Begin")
     baud = 9600
     try:
         port = sys.argv[1]
@@ -20,6 +23,7 @@ if __name__ == "__main__":
         baud = int(sys.argv[2])
     except (IndexError, ValueError):
         pass
+    logger.info(f"Started sniffing for port:{port} baud:{baud}")
     with SerialSnooper(port, baud) as ss:
         while True:
             data = ss.read_raw(16)
