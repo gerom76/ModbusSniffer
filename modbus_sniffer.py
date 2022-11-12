@@ -1,15 +1,14 @@
 import logging
+from common.smartLogger import setup_logger
+setup_logger(__package__)
+
 import sys
-from common.smartLogger import configure_handler
 from serial_snooper import SerialSnooper
 
-logging.basicConfig(level=logging.DEBUG)
-file_handler = configure_handler()
 logger = logging.getLogger()
-logger.addHandler(file_handler)
-logger.setLevel(logging.DEBUG)
 
 if __name__ == "__main__":
+    logger.info("__main__.Begin")
     baud = 9600
     try:
         port = sys.argv[1]
@@ -24,8 +23,8 @@ if __name__ == "__main__":
     with SerialSnooper(port, baud) as ss:
         while True:
             data = ss.read_raw(16)
-            if len(data):
-                ss.log_wrapper(data)
+            # if len(data):
+            #     logger.debug(data)
             response = ss.process(data)
             # sleep(float(1)/ss.baud)
     sys.exit(0)

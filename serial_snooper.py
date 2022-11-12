@@ -3,24 +3,19 @@ import logging
 #from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets
 #from binascii import b2a_hex
-from time import sleep
+# from time import sleep
 
 import serial
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import ModbusRtuFramer
 
-from common.smartLogger import configure_handler
-
-file_handler = configure_handler()
 logger = logging.getLogger()
-logger.addHandler(file_handler)
-#logger.setLevel(logging.DEBUG)
-
 class SerialSnooper:
     kMaxReadSize = 128
     kByteLength = 10
 
     def __init__(self, port, baud=9600):
+        logger.debug('SerialSnooper.__init__')
         self.port = port
         self.baud = baud
         self.connection = serial.Serial(port, baud, timeout=float(
@@ -45,44 +40,44 @@ class SerialSnooper:
         for msg in args:
             func_name = str(type(msg)).split(
                 '.')[-1].strip("'><").replace("Request", "")
-            self.log_wrapper("Master-> ID: {}, Function: {}: {}".format(
-                msg.unit_id, func_name, msg.function_code), end=" ")
+            logger.info(logger, "Master-> ID: {}, Function: {}: {}".format(
+                msg.unit_id, func_name, msg.function_code))
             try:
-                self.log_wrapper("Address: {}".format(msg.address), end=" ")
+                logger.info("Address: {}".format(msg.address))
             except AttributeError:
                 pass
             try:
-                self.log_wrapper("Count: {}".format(msg.count), end=" ")
+                logger.info("Count: {}".format(msg.count))
             except AttributeError:
                 pass
             try:
-                self.log_wrapper("Data: {}".format(msg.values), end=" ")
+                logger.info("Data: {}".format(msg.values))
             except AttributeError:
                 pass
             arg += 1
-            self.log_wrapper('{}/{}\n'.format(arg, len(args)), end="")
+            logger.info('{}/{}\n'.format(arg, len(args)))
 
     def client_packet_callback(self, *args, **kwargs):
         arg = 0
         for msg in args:
             func_name = str(type(msg)).split(
                 '.')[-1].strip("'><").replace("Request", "")
-            self.log_wrapper("Slave-> ID: {}, Function: {}: {}".format(
-                msg.unit_id, func_name, msg.function_code), end=" ")
+            logger.info("Slave-> ID: {}, Function: {}: {}".format(
+                msg.unit_id, func_name, msg.function_code))
             try:
-                self.log_wrapper("Address: {}".format(msg.address), end=" ")
+                logger.info("Address: {}".format(msg.address))
             except AttributeError:
                 pass
             try:
-                self.log_wrapper("Count: {}".format(msg.count), end=" ")
+                logger.info("Count: {}".format(msg.count))
             except AttributeError:
                 pass
             try:
-                self.log_wrapper("Data: {}".format(msg.values), end=" ")
+                logger.info("Data: {}".format(msg.values))
             except AttributeError:
                 pass
             arg += 1
-            self.log_wrapper('{}/{}\n'.format(arg, len(args)), end="")
+            logger.info('{}/{}\n'.format(arg, len(args)))
 
     def read_raw(self, n=16):
         return self.connection.read(n)
@@ -91,21 +86,18 @@ class SerialSnooper:
         if len(data) <= 0:
             return
         try:
-            self.log_wrapper("Check Client")
+            logger.debug("Check Client")
             self.client_framer.processIncomingPacket(
                 data, self.client_packet_callback, unit=None, single=True)
         except (IndexError, TypeError, KeyError) as e:
-            self.log_wrapper(e)
+            logger.debug(e)
             pass
         try:
-            self.log_wrapper("Check Server")
+            logger.debug("Check Server")
             self.server_framer.processIncomingPacket(
                 data, self.server_packet_callback, unit=None, single=True)
             pass
         except (IndexError, TypeError, KeyError) as e:
-            self.log_wrapper(e)
+            logger.debug(e)
             pass
 
-    def log_wrapper(self,  *values: object, sep: str = None, end: str = None,):
-        print(values, sep, end)
-        logger.log(logging.DEBUG, values, )
