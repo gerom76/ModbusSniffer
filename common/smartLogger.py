@@ -31,7 +31,7 @@ def setup_logger(logger_name):
     logger = logging.getLogger(logger_name)
     coloredlogs.install(level=logging.DEBUG, logger=logger, fmt= FORMAT)
     # better to have too much log than not enough
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     logger.addHandler(get_console_handler())
     logger.addHandler(get_file_handler())
     # with this pattern, it's rarely necessary to propagate the error up to parent

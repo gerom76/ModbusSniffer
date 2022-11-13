@@ -1,3 +1,5 @@
 pymodbus
 pyserial
 coloredlogs
+flask
+waitress
