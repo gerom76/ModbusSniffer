@@ -2,6 +2,6 @@ pymodbus
 pyserial
 coloredlogs
 flask
-flask-rest-jsonapi
+flask_rest_jsonapi_next
 flask-sqlalchemy
 waitress

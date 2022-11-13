@@ -10,46 +10,64 @@ import sys
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from marshmallow_jsonapi.flask import Schema
+from marshmallow_jsonapi import fields
+from flask_rest_jsonapi_next import Api, ResourceDetail, ResourceList
 
 from serial_snooper import SerialSnooper
 
 logger = logging.getLogger()
 app = Flask(__name__)
-    
+app.config['DEBUG'] = True
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///artists.db'
+
 def setup_app():
     logger.info("setup_app starting")
+
+    db = SQLAlchemy(app)
+    class Artist(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String)
     with app.app_context():
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////artists.db'
-        db = SQLAlchemy(app)
-        class Artist(db.Model):
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String)
-            birth_year = db.Column(db.Integer)
-            genre = db.Column(db.String)
         db.create_all()
 
-        from marshmallow_jsonapi.flask import Schema
-        from marshmallow_jsonapi import fields
+        # art1 = Artist(name='vvv')
+        # db.session.add(art1)
+        # db.session.commit()
 
-        # Create data abstraction layer
-        class ArtistSchema(Schema):
-            class Meta:
-                type_ = 'artist'
-                self_view = 'artist_one'
-                self_view_kwargs = {'id': '<id>'}
-                self_view_many = 'artist_many'
+    # Create data abstraction layer
+    class ArtistSchema(Schema):
+        class Meta:
+            type_ = 'artist'
+            self_view = 'artist_one'
+            self_view_kwargs = {'id': '<id>'}
+            self_view_many = 'artist_many'
 
-            id = fields.Integer()
-            name = fields.Str(required=True)
-            birth_year = fields.Integer(load_only=True)
-            genre = fields.Str()
+        id = fields.Integer()
+        name = fields.Str(required=True)
 
-        app.route('/')
-        def example():
-            return '{"name":"zzzz"}'
-            # return f'{"name":"{serialSnooper.get_statistics()}"}'
-        logger.info("setup_app finished") 
-        return app
+    # Create resource managers and endpoints
+    class ArtistMany(ResourceList):
+        schema = ArtistSchema
+        data_layer = {'session': db.session,
+                    'model': Artist}
+
+    class ArtistOne(ResourceDetail):
+        schema = ArtistSchema
+        data_layer = {'session': db.session,
+                    'model': Artist}
+
+    api = Api(app)
+    api.route(ArtistMany, 'artist_many', '/artists')
+    api.route(ArtistOne, 'artist_one', '/artists/<int:id>')
+
+
+    @app.route('/')
+    def example():
+        return '{"name":"zzzz"}'
+        # return f'{"name":"{serialSnooper.get_statistics()}"}'
+    logger.info("setup_app finished") 
+    return app
 
 def run_webserver(app: any):
     logger.info("Web server thread starting")
