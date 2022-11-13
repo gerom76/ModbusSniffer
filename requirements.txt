@@ -5,3 +5,4 @@ flask
 flask_rest_jsonapi_next
 flask-sqlalchemy
 waitress
+sqlalchemy-utils

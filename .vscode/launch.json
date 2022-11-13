@@ -11,7 +11,7 @@
             "program": "${file}",
             "args": ["/dev/ttyUSB0"],
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": false
         }
     ]
 }
