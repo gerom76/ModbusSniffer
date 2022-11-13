@@ -9,33 +9,63 @@ setup_logger(__package__)
 import sys
 
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
 from serial_snooper import SerialSnooper
 
 logger = logging.getLogger()
 app = Flask(__name__)
-@app.route('/')
-def example():
-    return '{"name":"Bob"}'
+    
+def setup_app():
+    logger.info("setup_app starting")
+    with app.app_context():
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////artists.db'
+        db = SQLAlchemy(app)
+        class Artist(db.Model):
+            id = db.Column(db.Integer, primary_key=True)
+            name = db.Column(db.String)
+            birth_year = db.Column(db.Integer)
+            genre = db.Column(db.String)
+        db.create_all()
 
-def run_webserver(name):
-    logger.info("Thread2 %s: starting", name)
-    logger.debug(f"Starting server")
+        from marshmallow_jsonapi.flask import Schema
+        from marshmallow_jsonapi import fields
+
+        # Create data abstraction layer
+        class ArtistSchema(Schema):
+            class Meta:
+                type_ = 'artist'
+                self_view = 'artist_one'
+                self_view_kwargs = {'id': '<id>'}
+                self_view_many = 'artist_many'
+
+            id = fields.Integer()
+            name = fields.Str(required=True)
+            birth_year = fields.Integer(load_only=True)
+            genre = fields.Str()
+
+        app.route('/')
+        def example():
+            return '{"name":"zzzz"}'
+            # return f'{"name":"{serialSnooper.get_statistics()}"}'
+        logger.info("setup_app finished") 
+        return app
+
+def run_webserver(app: any):
+    logger.info("Web server thread starting")
     from waitress import serve
     serve(app, host="0.0.0.0", port=8080)
-    logger.info("Thread2 %s: finishing", name)
+    logger.info("Web server thread finishing")
 
-def run_sniffer(port, baud):
-    logger.info("Sniffer thread starting")
+def run_sniffer(serialSnooper: SerialSnooper, port, baud):
     logger.info(f"Starting sniffing for port:{port} baud:{baud}")
-    with SerialSnooper(port, baud) as ss:
-        while True:
-            data = ss.read_raw(16)
-            if len(data):
-            #     logger.debug(data)
-                ss.process(data)
-                logger.info(f"Statistics: {ss.get_statistics()}")
-            # sleep(float(1)/ss.baud)
+    while True:
+        data = serialSnooper.read_raw(16)
+        if len(data):
+        #     logger.debug(data)
+            serialSnooper.process(data)
+            logger.info(f"Statistics: {serialSnooper.get_statistics()}")
+        # sleep(float(1)/ss.baud)
     logger.info("Sniffer thread  finishing")
 
 if __name__ == "__main__":
@@ -51,15 +81,18 @@ if __name__ == "__main__":
         baud = int(sys.argv[2])
     except (IndexError, ValueError):
         pass
-    
-    web_server_thread = threading.Thread(target=run_webserver, args=('snifferus',), daemon=True)
-    sniffer_thread = threading.Thread(target=run_sniffer, args=(port, baud,), daemon=True)
+
+    app = setup_app()
+    ss = SerialSnooper(port, baud)
+
+    web_server_thread = threading.Thread(target=run_webserver, args=(app,), daemon=True)
+    sniffer_thread = threading.Thread(target=run_sniffer, args=(ss, port, baud,), daemon=True)
 
     logger.info("Starting threads")
     web_server_thread.start()
     time.sleep(1)
     sniffer_thread.start()
-    
+
     web_server_thread.join()
     sniffer_thread.join()
 
