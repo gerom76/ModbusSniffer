@@ -19,55 +19,56 @@ from serial_snooper import SerialSnooper
 logger = logging.getLogger()
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///artists.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///smartmeters.db'
+db = SQLAlchemy(app)
+class SmartMeter(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    value = db.Column(db.String)
 
-def setup_app():
-    logger.info("setup_app starting")
-
-    db = SQLAlchemy(app)
-    class Artist(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String)
+def setup_database(db):
     with app.app_context():
         db.create_all()
 
-        # art1 = Artist(name='vvv')
-        # db.session.add(art1)
-        # db.session.commit()
+        sm1 = SmartMeter(name='dtsu666', value='0')
+        db.session.add(sm1)
+        db.session.commit()
+        
+def setup_webapp_api():
+    logger.info("setup_webapp_api starting")
 
     # Create data abstraction layer
-    class ArtistSchema(Schema):
+    class SmartMeterSchema(Schema):
         class Meta:
-            type_ = 'artist'
-            self_view = 'artist_one'
+            type_ = 'smartmeter'
+            self_view = 'smartmeter_one'
             self_view_kwargs = {'id': '<id>'}
-            self_view_many = 'artist_many'
+            self_view_many = 'smartmeter_many'
 
         id = fields.Integer()
         name = fields.Str(required=True)
 
     # Create resource managers and endpoints
-    class ArtistMany(ResourceList):
-        schema = ArtistSchema
+    class SmartMetersMany(ResourceList):
+        schema = SmartMeterSchema
         data_layer = {'session': db.session,
-                    'model': Artist}
+                    'model': SmartMeter}
 
-    class ArtistOne(ResourceDetail):
-        schema = ArtistSchema
+    class SmartMeterOne(ResourceDetail):
+        schema = SmartMeterSchema
         data_layer = {'session': db.session,
-                    'model': Artist}
+                    'model': SmartMeter}
 
     api = Api(app)
-    api.route(ArtistMany, 'artist_many', '/artists')
-    api.route(ArtistOne, 'artist_one', '/artists/<int:id>')
+    api.route(SmartMetersMany, 'smartmeter_many', '/smartmeters')
+    api.route(SmartMeterOne, 'smartmeter_one', '/smartmeters/<int:id>')
 
 
     @app.route('/')
     def example():
         return '{"name":"zzzz"}'
         # return f'{"name":"{serialSnooper.get_statistics()}"}'
-    logger.info("setup_app finished") 
-    return app
+    logger.info("setup_webapp_api finished") 
 
 def run_webserver(app: any):
     logger.info("Web server thread starting")
@@ -100,7 +101,9 @@ if __name__ == "__main__":
     except (IndexError, ValueError):
         pass
 
-    app = setup_app()
+    setup_database(db)
+    setup_webapp_api()
+    # sys.exit(0)
     ss = SerialSnooper(port, baud)
 
     web_server_thread = threading.Thread(target=run_webserver, args=(app,), daemon=True)
