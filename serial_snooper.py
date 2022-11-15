@@ -48,6 +48,7 @@ class SerialSnooper:
                 msg.unit_id, func_name, msg.function_code))
             try:
                 logger.info("Address: {}".format(msg.address))
+                logger.info("server_ok")
             except AttributeError:
                 pass
             try:
@@ -69,24 +70,25 @@ class SerialSnooper:
                 '.')[-1].strip("'><").replace("Request", "")
             logger.info("Slave-> ID: {}, Function: {}: {}".format(
                 msg.unit_id, func_name, msg.function_code))
-            try:
-                logger.info("Address: {}".format(msg.address))
-            except AttributeError:
-                pass
-            try:
-                logger.info("Count: {}".format(msg.count))
-            except AttributeError:
-                pass
-            try:
-                logger.info("Data: {}".format(msg.values))
-            except AttributeError:
-                pass
             arg += 1
             logger.info('{}/{}\n'.format(arg, len(args)))
             self.process_meter_response(msg)
 
     def process_meter_response(self, msg):
-        logger.info(f'Processing msg: {msg}')
+        try:
+            logger.info(f'Processing msg: {msg} {msg.registers}')
+            count = len(msg.registers)
+            if count == 60:
+                logger.info(f'Power data')
+            elif count == 82:
+                logger.info(f'Electricity data')
+            else:
+                logger.debug(f'Unknown address')
+        except:
+            # logger.error(f'Error processing msg: {msg}')
+            pass
+        finally:
+            logger.debug(f'Finished processing msg: {msg}')
 
     def read_raw(self, n=16):
         return self.connection.read(n)
@@ -94,6 +96,7 @@ class SerialSnooper:
     def process(self, data):
         if len(data) <= 0:
             return
+        logger.debug(f'data: {data}')
         self.processedFramesCounter += 1
         try:
             logger.debug("Check Client")
