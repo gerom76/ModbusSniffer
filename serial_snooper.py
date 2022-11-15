@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import logging
 
 import serial
@@ -85,9 +86,21 @@ class SerialSnooper:
             elif count == 82:
                 logger.info(f'Electricity data')
                 decoder = BinaryPayloadDecoder.fromRegisters(msg.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-                Uab = decoder.decode_32bit_float()
-                Ubc = decoder.decode_32bit_float()
-                logger.info(f'Uab: {Uab} Ubc {Ubc}')
+                # Uab = decoder.decode_32bit_float()
+                # Ubc = decoder.decode_32bit_float()
+                # logger.info(f'Uab: {Uab} Ubc {Ubc}')
+                electricity = OrderedDict(
+                    [
+                        ("Uab", decoder.decode_32bit_float()),
+                        ("Ubc", decoder.decode_32bit_float()),
+                        ("Uca", decoder.decode_32bit_float()),
+                        ("Ua", decoder.decode_32bit_float()),
+                        ("Ub", decoder.decode_32bit_float()),
+                        ("Uc", decoder.decode_32bit_float()),
+                    ]
+                )
+                for name, value in iter(electricity.items()):
+                    logger.info(f'{name} = {value}')
             else:
                 logger.debug(f'Unknown address')
         except:
