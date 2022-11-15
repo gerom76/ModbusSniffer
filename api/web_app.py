@@ -106,26 +106,29 @@ def update_electricity(dictData):
     with app.app_context():
         sm = db.session.execute(
             db.select(SmartMeter).filter_by(name=DTSU666)).one()
+        entry = sm[0]
         for name, value in iter(dictData.items()):
-            if name == 'Uab':
-                sm[0].em_Uab = value
-            elif name == 'Ubc':
-                sm[0].em_Ubc = value
-            elif name == 'Uca':
-                sm[0].em_Uca = value
-            elif name == 'Ua':
-                sm[0].em_Ua = value
-            elif name == 'Ub':
-                sm[0].em_Ub = value
-            elif name == 'Uc':
-                sm[0].em_Uc = value
+            if name == 'em_Uab':
+                entry.em_Uab = value
+            elif name == 'em_Ubc':
+                entry.em_Ubc = value
+            elif name == 'em_Uca':
+                entry.em_Uca = value
+            elif name == 'em_Ua':
+                entry.em_Ua = value
+            elif name == 'em_Ub':
+                entry.em_Ub = value
+            elif name == 'em_Uc':
+                entry.em_Uc = value
         db.session.commit()
+
 
 def update_power(dictData):
     with app.app_context():
         sm = db.session.execute(
             db.select(SmartMeter).filter_by(name=DTSU666)).one()
+        entry = sm[0]
         for name, value in iter(dictData.items()):
-            if name == 'ImpEp':
-                sm[0].em_ImpEp = value
+            if name == 'em_ImpEp':
+                entry.em_ImpEp = value
         db.session.commit()

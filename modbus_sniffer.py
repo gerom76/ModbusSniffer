@@ -1,7 +1,7 @@
 import logging
 import threading
 import time
-from app.web_app import get_app, setup_webapp_api, update_sniffing_quality
+from api.web_app import get_app, setup_webapp_api, update_sniffing_quality
 
 from common.smartLogger import setup_logger
 

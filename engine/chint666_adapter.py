@@ -3,7 +3,7 @@ from collections import OrderedDict
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.constants import Endian
 
-from app.web_app import update_electricity, update_power
+from api.web_app import update_electricity, update_power
 
 logger = logging.getLogger()
 
@@ -35,12 +35,12 @@ def decode_electricity(registers):
         registers, byteorder=Endian.Big, wordorder=Endian.Big)
     dict = OrderedDict(
         [
-            ("Uab", decoder.decode_32bit_float()*0.1),
-            ("Ubc", decoder.decode_32bit_float()*0.1),
-            ("Uca", decoder.decode_32bit_float()*0.1),
-            ("Ua", decoder.decode_32bit_float()*0.1),
-            ("Ub", decoder.decode_32bit_float()*0.1),
-            ("Uc", decoder.decode_32bit_float()*0.1),
+            ("em_Uab", decoder.decode_32bit_float()*0.1),
+            ("em_Ubc", decoder.decode_32bit_float()*0.1),
+            ("em_Uca", decoder.decode_32bit_float()*0.1),
+            ("em_Ua", decoder.decode_32bit_float()*0.1),
+            ("em_Ub", decoder.decode_32bit_float()*0.1),
+            ("em_Uc", decoder.decode_32bit_float()*0.1),
         ]
     )
     return dict
@@ -51,7 +51,7 @@ def decode_power(registers):
         registers, byteorder=Endian.Big, wordorder=Endian.Big)
     dict = OrderedDict(
         [
-            ("ImpEp", decoder.decode_32bit_float()),
+            ("em_ImpEp", decoder.decode_32bit_float()),
         ]
     )
     return dict

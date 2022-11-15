@@ -9,7 +9,7 @@ from pymodbus.transaction import ModbusRtuFramer
 #from binascii import b2a_hex
 # from time import sleep
 
-from engine.chint666_mapper import process_meter_response
+from engine.chint666_adapter import process_meter_response
 
 logger = logging.getLogger()
 class SerialSnooper:
