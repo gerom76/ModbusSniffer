@@ -45,8 +45,9 @@ class SerialSnooper:
         for msg in args:
             func_name = str(type(msg)).split(
                 '.')[-1].strip("'><").replace("Request", "")
-            logger.info(logger, "Master-> ID: {}, Function: {}: {}".format(
-                msg.unit_id, func_name, msg.function_code))
+            logger.info(f"Master-> ID: {func_name}")
+            # logger.info(logger, "Master-> ID: {}, Function: {}: {}".format(
+            #     msg.unit_id, func_name, msg.function_code))
             try:
                 logger.info("Address: {}".format(msg.address))
                 logger.info("server_ok")
@@ -85,7 +86,8 @@ class SerialSnooper:
                 logger.info(f'Electricity data')
                 decoder = BinaryPayloadDecoder.fromRegisters(msg.registers, byteorder=Endian.Big, wordorder=Endian.Big)
                 Uab = decoder.decode_32bit_float()
-                logger.info(f'Uab: {Uab}')
+                Ubc = decoder.decode_32bit_float()
+                logger.info(f'Uab: {Uab} Ubc {Ubc}')
             else:
                 logger.debug(f'Unknown address')
         except:
