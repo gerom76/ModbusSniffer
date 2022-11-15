@@ -9,7 +9,7 @@ setup_logger(__package__)
 
 import sys
 
-from serial_snooper import SerialSnooper
+from engine.serial_snooper import SerialSnooper
 
 logger = logging.getLogger()
 
