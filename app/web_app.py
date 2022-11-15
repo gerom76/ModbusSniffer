@@ -14,10 +14,12 @@ DBNAME = 'smartmeters'
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DBNAME}.db'
 db = SQLAlchemy(app)
 DTSU666 = 'dtsu666'
+
+
 class SmartMeter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
-    value01 = db.Column(db.String)
+    sniffing_quality = db.Column(db.String)
     em_Uab = db.Column(db.String)
     em_Ubc = db.Column(db.String)
     em_Uca = db.Column(db.String)
@@ -27,6 +29,8 @@ class SmartMeter(db.Model):
     em_ImpEp = db.Column(db.String)
 
 # Create data abstraction layer
+
+
 class SmartMeterSchema(Schema):
     class Meta:
         type_ = 'smartmeter'
@@ -36,7 +40,7 @@ class SmartMeterSchema(Schema):
 
     id = fields.Integer()
     name = fields.Str(required=True)
-    value01 = fields.Str(required=True)
+    sniffing_quality = fields.Str(required=True)
     em_Uab = fields.Str(required=False)
     em_Ubc = fields.Str(required=False)
     em_Uca = fields.Str(required=False)
@@ -46,30 +50,36 @@ class SmartMeterSchema(Schema):
     em_ImpEp = fields.Str(required=False)
 
 # Create resource managers and endpoints
+
+
 class SmartMetersMany(ResourceList):
     schema = SmartMeterSchema
     data_layer = {'session': db.session,
-                'model': SmartMeter}
+                  'model': SmartMeter}
+
 
 class SmartMeterOne(ResourceDetail):
     schema = SmartMeterSchema
     data_layer = {'session': db.session,
-                'model': SmartMeter}
+                  'model': SmartMeter}
+
 
 def get_app():
     return app
 
+
 def setup_database():
     if database_exists(f'sqlite:///instance/{DBNAME}.db'):
         return
-    
+
     with app.app_context():
         db.create_all()
 
-        sm1 = SmartMeter(name=DTSU666, value01='0')
+        sm1 = SmartMeter(name=DTSU666, sniffing_quality='0')
         db.session.add(sm1)
         db.session.commit()
-        
+
+
 def setup_webapp_api():
     logger.info("setup_webapp_api starting")
     setup_database()
@@ -81,11 +91,41 @@ def setup_webapp_api():
     @app.route('/')
     def example():
         return '{"app":"SmartMeter Sniffer"}'
-    logger.info("setup_webapp_api finished") 
+    logger.info("setup_webapp_api finished")
 
-def update_smartmeter(value):
+
+def update_sniffing_quality(value):
     with app.app_context():
-        sm = db.session.execute(db.select(SmartMeter).filter_by(name=DTSU666)).one()
-        sm[0].value01 = value
+        sm = db.session.execute(
+            db.select(SmartMeter).filter_by(name=DTSU666)).one()
+        sm[0].sniffing_quality = value
         db.session.commit()
-    
+
+
+def update_electricity(dictData):
+    with app.app_context():
+        sm = db.session.execute(
+            db.select(SmartMeter).filter_by(name=DTSU666)).one()
+        for name, value in iter(dictData.items()):
+            if name == 'Uab':
+                sm[0].em_Uab = value
+            elif name == 'Ubc':
+                sm[0].em_Ubc = value
+            elif name == 'Uca':
+                sm[0].em_Uca = value
+            elif name == 'Ua':
+                sm[0].em_Ua = value
+            elif name == 'Ub':
+                sm[0].em_Ub = value
+            elif name == 'Uc':
+                sm[0].em_Uc = value
+        db.session.commit()
+
+def update_power(dictData):
+    with app.app_context():
+        sm = db.session.execute(
+            db.select(SmartMeter).filter_by(name=DTSU666)).one()
+        for name, value in iter(dictData.items()):
+            if name == 'ImpEp':
+                sm[0].em_ImpEp = value
+        db.session.commit()

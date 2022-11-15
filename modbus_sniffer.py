@@ -1,7 +1,7 @@
 import logging
 import threading
 import time
-from app.web_app import get_app, setup_webapp_api, update_smartmeter
+from app.web_app import get_app, setup_webapp_api, update_sniffing_quality
 
 from common.smartLogger import setup_logger
 
@@ -29,7 +29,7 @@ def run_sniffer(serialSnooper: SerialSnooper, port, baud, slave_address):
             serialSnooper.process(data, slave_address)
             statistics = serialSnooper.get_statistics()
             logger.debug(f"Statistics: {statistics}")
-            update_smartmeter(statistics)
+            update_sniffing_quality(statistics)
         # sleep(float(1)/ss.baud)
     logger.info("Sniffer thread  finishing")
 

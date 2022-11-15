@@ -13,6 +13,8 @@ from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.constants import Endian
 
+from app.web_app import update_electricity, update_power
+
 logger = logging.getLogger()
 class SerialSnooper:
     kMaxReadSize = 128
@@ -46,24 +48,24 @@ class SerialSnooper:
         for msg in args:
             func_name = str(type(msg)).split(
                 '.')[-1].strip("'><").replace("Request", "")
-            logger.info(f"Master-> ID: {func_name}")
+            logger.debug(f"Master-> ID: {func_name}")
             # logger.info(logger, "Master-> ID: {}, Function: {}: {}".format(
             #     msg.unit_id, func_name, msg.function_code))
             try:
-                logger.info("Address: {}".format(msg.address))
-                logger.info("server_ok")
+                logger.debug("Address: {}".format(msg.address))
+                logger.debug("server_ok")
             except AttributeError:
                 pass
             try:
-                logger.info("Count: {}".format(msg.count))
+                logger.debug("Count: {}".format(msg.count))
             except AttributeError:
                 pass
             try:
-                logger.info("Data: {}".format(msg.values))
+                logger.debug("Data: {}".format(msg.values))
             except AttributeError:
                 pass
             arg += 1
-            logger.info('{}/{}\n'.format(arg, len(args)))
+            logger.debug('{}/{}\n'.format(arg, len(args)))
 
     def client_packet_callback(self, *args, **kwargs):
         self.interceptedResponseFramesCounter += 1
@@ -71,10 +73,10 @@ class SerialSnooper:
         for msg in args:
             func_name = str(type(msg)).split(
                 '.')[-1].strip("'><").replace("Request", "")
-            logger.info("Slave-> ID: {}, Function: {}: {}".format(
+            logger.debug("Slave-> ID: {}, Function: {}: {}".format(
                 msg.unit_id, func_name, msg.function_code))
             arg += 1
-            logger.info('{}/{}\n'.format(arg, len(args)))
+            logger.debug('{}/{}\n'.format(arg, len(args)))
             self.process_meter_response(msg)
 
     def process_meter_response(self, msg):
@@ -82,25 +84,15 @@ class SerialSnooper:
             logger.info(f'Processing msg: {msg} {msg.registers}')
             count = len(msg.registers)
             if count == 60:
-                logger.info(f'Power data')
+                logger.debug(f'Power data')
+                power_data = self.decode_power(msg.registers)
+                update_power(power_data)
             elif count == 82:
-                logger.info(f'Electricity data')
-                decoder = BinaryPayloadDecoder.fromRegisters(msg.registers, byteorder=Endian.Big, wordorder=Endian.Big)
-                # Uab = decoder.decode_32bit_float()
-                # Ubc = decoder.decode_32bit_float()
-                # logger.info(f'Uab: {Uab} Ubc {Ubc}')
-                electricity = OrderedDict(
-                    [
-                        ("Uab", decoder.decode_32bit_float()),
-                        ("Ubc", decoder.decode_32bit_float()),
-                        ("Uca", decoder.decode_32bit_float()),
-                        ("Ua", decoder.decode_32bit_float()),
-                        ("Ub", decoder.decode_32bit_float()),
-                        ("Uc", decoder.decode_32bit_float()),
-                    ]
-                )
-                for name, value in iter(electricity.items()):
-                    logger.info(f'{name} = {value}')
+                logger.debug(f'Electricity data')
+                electricity_data = self.decode_electricity(msg.registers)
+                # for name, value in iter(electricity_data.items()):
+                #     logger.info(f'{name} = {value}')
+                update_electricity(electricity_data)
             else:
                 logger.debug(f'Unknown address')
         except:
@@ -108,6 +100,29 @@ class SerialSnooper:
             pass
         finally:
             logger.debug(f'Finished processing msg: {msg}')
+
+    def decode_electricity(self, registers):
+        decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
+        dict = OrderedDict(
+            [
+                ("Uab", decoder.decode_32bit_float()*0.1),
+                ("Ubc", decoder.decode_32bit_float()*0.1),
+                ("Uca", decoder.decode_32bit_float()*0.1),
+                ("Ua", decoder.decode_32bit_float()*0.1),
+                ("Ub", decoder.decode_32bit_float()*0.1),
+                ("Uc", decoder.decode_32bit_float()*0.1),
+            ]
+        )
+        return dict
+
+    def decode_power(self, registers):
+        decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
+        dict = OrderedDict(
+            [
+                ("ImpEp", decoder.decode_32bit_float()),
+            ]
+        )
+        return dict
 
     def read_raw(self, n=16):
         return self.connection.read(n)
