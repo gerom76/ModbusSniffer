@@ -19,6 +19,15 @@
       "args": ["/dev/ttyUSB0"],
       "console": "integratedTerminal",
       "justMyCode": false
+    },
+    {
+      "name": "Python: Entry File",
+      "type": "python",
+      "request": "launch",
+      "program": "modbus_sniffer.py",
+      "args": ["/dev/ttyUSB0"],
+      "console": "integratedTerminal",
+      "justMyCode": false
     }
   ]
 }
