@@ -19,14 +19,14 @@ def run_webserver(app: any):
     serve(app, host="0.0.0.0", port=8080)
     logger.info("Web server thread finishing")
 
-def run_sniffer(serialSnooper: SerialSnooper, port, baud):
+def run_sniffer(serialSnooper: SerialSnooper, port, baud, slave_address):
     read_size = 128
-    logger.info(f"Starting sniffing for port:{port} baud:{baud} read_size:{read_size}")
+    logger.info(f"Starting sniffing for port:{port} baud:{baud} read_size:{read_size} slave_address:{slave_address}")
     while True:
         data = serialSnooper.read_raw(read_size)
         if len(data):
-        #     logger.debug(data)
-            serialSnooper.process(data)
+            #logger.debug(data)
+            serialSnooper.process(data, slave_address)
             statistics = serialSnooper.get_statistics()
             logger.debug(f"Statistics: {statistics}")
             update_smartmeter(statistics)
@@ -47,12 +47,14 @@ if __name__ == "__main__":
     except (IndexError, ValueError):
         pass
 
+    slave_address = 1
+
     setup_webapp_api()
     #sys.exit(0)
     ss = SerialSnooper(port, baud)
 
     web_server_thread = threading.Thread(target=run_webserver, args=(get_app(),), daemon=True)
-    sniffer_thread = threading.Thread(target=run_sniffer, args=(ss, port, baud,), daemon=True)
+    sniffer_thread = threading.Thread(target=run_sniffer, args=(ss, port, baud, slave_address), daemon=True)
 
     logger.info("Starting threads")
     web_server_thread.start()

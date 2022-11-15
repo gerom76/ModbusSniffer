@@ -9,7 +9,8 @@ from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets
 #from binascii import b2a_hex
 # from time import sleep
-
+from pymodbus.payload import BinaryPayloadDecoder
+from pymodbus.constants import Endian
 
 logger = logging.getLogger()
 class SerialSnooper:
@@ -82,6 +83,9 @@ class SerialSnooper:
                 logger.info(f'Power data')
             elif count == 82:
                 logger.info(f'Electricity data')
+                decoder = BinaryPayloadDecoder.fromRegisters(msg.registers, byteorder=Endian.Big, wordorder=Endian.Big)
+                Uab = decoder.decode_32bit_float()
+                logger.info(f'Uab: {Uab}')
             else:
                 logger.debug(f'Unknown address')
         except:
@@ -93,7 +97,7 @@ class SerialSnooper:
     def read_raw(self, n=16):
         return self.connection.read(n)
 
-    def process(self, data):
+    def process(self, data, slave_address):
         if len(data) <= 0:
             return
         logger.debug(f'data: {data}')
@@ -101,14 +105,14 @@ class SerialSnooper:
         try:
             logger.debug("Check Client")
             self.client_framer.processIncomingPacket(
-                data, self.client_packet_callback, unit=None, single=True)
+                data, self.client_packet_callback, unit=slave_address, single=True)
         except (IndexError, TypeError, KeyError) as e:
             logger.debug(e)
             pass
         try:
             logger.debug("Check Server")
             self.server_framer.processIncomingPacket(
-                data, self.server_packet_callback, unit=None, single=True)
+                data, self.server_packet_callback, unit=slave_address, single=True)
             pass
         except (IndexError, TypeError, KeyError) as e:
             logger.debug(e)
