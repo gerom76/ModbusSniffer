@@ -83,6 +83,10 @@ class SerialSnooper:
                 pass
             arg += 1
             logger.info('{}/{}\n'.format(arg, len(args)))
+            self.process_meter_response(msg)
+
+    def process_meter_response(self, msg):
+        logger.info(f'Processing msg: {msg}')
 
     def read_raw(self, n=16):
         return self.connection.read(n)

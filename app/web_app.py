@@ -18,6 +18,13 @@ class SmartMeter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     value01 = db.Column(db.String)
+    em_Uab = db.Column(db.String)
+    em_Ubc = db.Column(db.String)
+    em_Uca = db.Column(db.String)
+    em_Ua = db.Column(db.String)
+    em_Ub = db.Column(db.String)
+    em_Uc = db.Column(db.String)
+    em_ImpEp = db.Column(db.String)
 
 # Create data abstraction layer
 class SmartMeterSchema(Schema):
@@ -30,6 +37,13 @@ class SmartMeterSchema(Schema):
     id = fields.Integer()
     name = fields.Str(required=True)
     value01 = fields.Str(required=True)
+    em_Uab = fields.Str(required=False)
+    em_Ubc = fields.Str(required=False)
+    em_Uca = fields.Str(required=False)
+    em_Ua = fields.Str(required=False)
+    em_Ub = fields.Str(required=False)
+    em_Uc = fields.Str(required=False)
+    em_ImpEp = fields.Str(required=False)
 
 # Create resource managers and endpoints
 class SmartMetersMany(ResourceList):

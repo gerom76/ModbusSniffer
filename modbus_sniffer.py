@@ -20,9 +20,10 @@ def run_webserver(app: any):
     logger.info("Web server thread finishing")
 
 def run_sniffer(serialSnooper: SerialSnooper, port, baud):
-    logger.info(f"Starting sniffing for port:{port} baud:{baud}")
+    read_size = 32
+    logger.info(f"Starting sniffing for port:{port} baud:{baud} read_size:{read_size}")
     while True:
-        data = serialSnooper.read_raw(16)
+        data = serialSnooper.read_raw(read_size)
         if len(data):
         #     logger.debug(data)
             serialSnooper.process(data)
