@@ -26,6 +26,10 @@ class SmartMeter(db.Model):
     em_Ua = db.Column(db.String)
     em_Ub = db.Column(db.String)
     em_Uc = db.Column(db.String)
+    em_Ia = db.Column(db.String)
+    em_Ib = db.Column(db.String)
+    em_Ic = db.Column(db.String)
+
     em_ImpEp = db.Column(db.String)
 
 # Create data abstraction layer
@@ -47,6 +51,10 @@ class SmartMeterSchema(Schema):
     em_Ua = fields.Str(required=False)
     em_Ub = fields.Str(required=False)
     em_Uc = fields.Str(required=False)
+    em_Ia = fields.Str(required=False)
+    em_Ib = fields.Str(required=False)
+    em_Ic = fields.Str(required=False)
+    
     em_ImpEp = fields.Str(required=False)
 
 # Create resource managers and endpoints

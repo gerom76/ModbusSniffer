@@ -41,6 +41,9 @@ def decode_electricity(registers):
             ("em_Ua", decoder.decode_32bit_float()*0.1),
             ("em_Ub", decoder.decode_32bit_float()*0.1),
             ("em_Uc", decoder.decode_32bit_float()*0.1),
+            ("em_Ia", decoder.decode_32bit_float()*0.01),
+            ("em_Ib", decoder.decode_32bit_float()*0.01),
+            ("em_Ic", decoder.decode_32bit_float()*0.01),
         ]
     )
     return dict
