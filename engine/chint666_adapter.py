@@ -41,20 +41,44 @@ def decode_electricity(registers):
             ("em_Ua", decoder.decode_32bit_float()*0.1),
             ("em_Ub", decoder.decode_32bit_float()*0.1),
             ("em_Uc", decoder.decode_32bit_float()*0.1),
-            ("em_Ia", decoder.decode_32bit_float()*0.01),
-            ("em_Ib", decoder.decode_32bit_float()*0.01),
-            ("em_Ic", decoder.decode_32bit_float()*0.01),
+            ("em_Ia", decoder.decode_32bit_float()*0.001),
+            ("em_Ib", decoder.decode_32bit_float()*0.001),
+            ("em_Ic", decoder.decode_32bit_float()*0.001),
+            ("em_Pt", decoder.decode_32bit_float()*0.1),
+            ("em_Pa", decoder.decode_32bit_float()*0.1),
+            ("em_Pb", decoder.decode_32bit_float()*0.1),
+            ("em_Pc", decoder.decode_32bit_float()*0.1),
+            ("em_Qt", decoder.decode_32bit_float()*0.1),
+            ("em_Qa", decoder.decode_32bit_float()*0.1),
+            ("em_Qb", decoder.decode_32bit_float()*0.1),
+            ("em_Qc", decoder.decode_32bit_float()*0.1),
         ]
     )
+    decoder.skip_bytes(8)
+    dict["em_PFt"] = decoder.decode_32bit_float()*0.001
+    dict["em_PFa"] = decoder.decode_32bit_float()*0.001
+    dict["em_PFb"] = decoder.decode_32bit_float()*0.001
+    dict["em_PFc"] = decoder.decode_32bit_float()*0.001
+    decoder.skip_bytes(18)
+    dict["em_Freq"] = decoder.decode_32bit_float()*0.01
+
     return dict
 
 
 def decode_power(registers):
     decoder = BinaryPayloadDecoder.fromRegisters(
         registers, byteorder=Endian.Big, wordorder=Endian.Big)
-    dict = OrderedDict(
-        [
-            ("em_ImpEp", decoder.decode_32bit_float()),
-        ]
-    )
+    dict = OrderedDict()
+    dict["em_ImpEp"] = decoder.decode_32bit_float()
+    decoder.skip_bytes(8)
+    dict["em_ExpEp"] = decoder.decode_32bit_float()
+    decoder.skip_bytes(8)
+    dict["em_Q1Eq"] = decoder.decode_32bit_float()
+    decoder.skip_bytes(8)
+    dict["em_Q2Eq"] = decoder.decode_32bit_float()
+    decoder.skip_bytes(8)
+    dict["em_Q3Eq"] = decoder.decode_32bit_float()
+    decoder.skip_bytes(8)
+    dict["em_Q4Eq"] = decoder.decode_32bit_float()
+
     return dict

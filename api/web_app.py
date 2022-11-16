@@ -29,9 +29,27 @@ class SmartMeter(db.Model):
     em_Ia = db.Column(db.String)
     em_Ib = db.Column(db.String)
     em_Ic = db.Column(db.String)
+    em_Pt = db.Column(db.String)
+    em_Pa = db.Column(db.String)
+    em_Pb = db.Column(db.String)
+    em_Pc = db.Column(db.String)
+    em_Qt = db.Column(db.String)
+    em_Qa = db.Column(db.String)
+    em_Qb = db.Column(db.String)
+    em_Qc = db.Column(db.String)
+    em_PFt = db.Column(db.String)
+    em_PFa = db.Column(db.String)
+    em_PFb = db.Column(db.String)
+    em_PFc = db.Column(db.String)
+    em_Freq = db.Column(db.String)
 
     em_ImpEp = db.Column(db.String)
-
+    em_ExpEp = db.Column(db.String)
+    em_Q1Eq = db.Column(db.String)
+    em_Q2Eq = db.Column(db.String)
+    em_Q3Eq = db.Column(db.String)
+    em_Q4Eq = db.Column(db.String)
+    
 # Create data abstraction layer
 
 
@@ -54,9 +72,26 @@ class SmartMeterSchema(Schema):
     em_Ia = fields.Str(required=False)
     em_Ib = fields.Str(required=False)
     em_Ic = fields.Str(required=False)
-    
-    em_ImpEp = fields.Str(required=False)
+    em_Pt = fields.Str(required=False)
+    em_Pa = fields.Str(required=False)
+    em_Pb = fields.Str(required=False)
+    em_Pc = fields.Str(required=False)
+    em_Qt = fields.Str(required=False)
+    em_Qa = fields.Str(required=False)
+    em_Qb = fields.Str(required=False)
+    em_Qc = fields.Str(required=False)
+    em_PFt = fields.Str(required=False)
+    em_PFa = fields.Str(required=False)
+    em_PFb = fields.Str(required=False)
+    em_PFc = fields.Str(required=False)
+    em_Freq = fields.Str(required=False)
 
+    em_ImpEp = fields.Str(required=False)
+    em_ExpEp = fields.Str(required=False)
+    em_Q1Eq = fields.Str(required=False)
+    em_Q2Eq = fields.Str(required=False)
+    em_Q3Eq = fields.Str(required=False)
+    em_Q4Eq = fields.Str(required=False)
 # Create resource managers and endpoints
 
 
