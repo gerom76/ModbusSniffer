@@ -25,7 +25,7 @@ def run_sniffer(serialSnooper: SerialSnooper, port, baud, slave_address):
     while True:
         data = serialSnooper.read_raw(read_size)
         if len(data):
-            #logger.debug(data)
+            logger.info(data)
             serialSnooper.process(data, slave_address)
             statistics = serialSnooper.get_statistics()
             logger.debug(f"Statistics: {statistics}")

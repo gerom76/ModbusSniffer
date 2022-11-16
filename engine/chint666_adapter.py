@@ -35,9 +35,9 @@ def decode_electricity(registers):
         registers, byteorder=Endian.Big, wordorder=Endian.Big)
     dict = OrderedDict(
         [
-            ("em_Uab", decoder.decode_32bit_float()*0.1),
-            ("em_Ubc", decoder.decode_32bit_float()*0.1),
-            ("em_Uca", decoder.decode_32bit_float()*0.1),
+            ("em_Uab", decoder.decode_32bit_float()*0.1), # 2000H -> 8192
+            ("em_Ubc", decoder.decode_32bit_float()*0.1), # 2002H
+            ("em_Uca", decoder.decode_32bit_float()*0.1), # 2004H
             ("em_Ua", decoder.decode_32bit_float()*0.1),
             ("em_Ub", decoder.decode_32bit_float()*0.1),
             ("em_Uc", decoder.decode_32bit_float()*0.1),
@@ -51,15 +51,21 @@ def decode_electricity(registers):
             ("em_Qt", decoder.decode_32bit_float()*0.1),
             ("em_Qa", decoder.decode_32bit_float()*0.1),
             ("em_Qb", decoder.decode_32bit_float()*0.1),
-            ("em_Qc", decoder.decode_32bit_float()*0.1),
+            ("em_Qc", decoder.decode_32bit_float()*0.1), # 2020H -> 8224
         ]
     )
-    decoder.skip_bytes(8)
+    decoder.skip_bytes(16)
+    
+    # 202AH -> 8234
     dict["em_PFt"] = decoder.decode_32bit_float()*0.001
     dict["em_PFa"] = decoder.decode_32bit_float()*0.001
     dict["em_PFb"] = decoder.decode_32bit_float()*0.001
+    
+    # 2030H -> 8240
     dict["em_PFc"] = decoder.decode_32bit_float()*0.001
-    decoder.skip_bytes(18)
+    decoder.skip_bytes(20)
+    
+    # 2044H -> 8260
     dict["em_Freq"] = decoder.decode_32bit_float()*0.01
 
     return dict
@@ -69,16 +75,27 @@ def decode_power(registers):
     decoder = BinaryPayloadDecoder.fromRegisters(
         registers, byteorder=Endian.Big, wordorder=Endian.Big)
     dict = OrderedDict()
+    # 101EH -> 4126
     dict["em_ImpEp"] = decoder.decode_32bit_float()
-    decoder.skip_bytes(8)
+    decoder.skip_bytes(10)
+    
+    # 1028H -> 4136
     dict["em_ExpEp"] = decoder.decode_32bit_float()
-    decoder.skip_bytes(8)
+    decoder.skip_bytes(10)
+    
+    # 1032H -> 4146
     dict["em_Q1Eq"] = decoder.decode_32bit_float()
-    decoder.skip_bytes(8)
+    decoder.skip_bytes(10)
+    
+    # 103CH -> 4156
     dict["em_Q2Eq"] = decoder.decode_32bit_float()
-    decoder.skip_bytes(8)
+    decoder.skip_bytes(10)
+    
+    # 1046H -> 4166
     dict["em_Q3Eq"] = decoder.decode_32bit_float()
-    decoder.skip_bytes(8)
+    decoder.skip_bytes(10)
+    
+    # 1050H -> 4176
     dict["em_Q4Eq"] = decoder.decode_32bit_float()
 
     return dict
