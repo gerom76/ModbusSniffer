@@ -25,12 +25,12 @@ def run_sniffer(serialSnooper: SerialSnooper, port, baud, slave_address):
     while True:
         data = serialSnooper.read_raw(read_size)
         if len(data):
-            logger.info(data)
+            logger.info(data.hex())
             serialSnooper.process(data, slave_address)
             statistics = serialSnooper.get_statistics()
             logger.debug(f"Statistics: {statistics}")
             update_sniffing_quality(statistics)
-        # sleep(float(1)/ss.baud)
+            # time.sleep(float(1)/ss.baud)
     logger.info("Sniffer thread  finishing")
 
 if __name__ == "__main__":

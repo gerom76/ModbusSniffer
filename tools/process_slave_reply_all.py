@@ -82,8 +82,8 @@ if __name__ == "__main__":
         slave_sniffer = SerialSnooper("/tmp/ptyp0", baud)
         mq = Queue()
         sq = Queue()
-        master_thread = Process(target=read_to_queue, args=(master_sniffer.connection, mq))
-        slave_thread = Process(target=read_to_queue, args=(slave_sniffer.connection, sq))
+        master_thread = Process(target=read_to_queue, args=(master_sniffer.serial, mq))
+        slave_thread = Process(target=read_to_queue, args=(slave_sniffer.serial, sq))
         master_thread.start()
         slave_thread.start()
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
             slave_data = bytes()
             try:
                 master_data = mq.get()  # read data from usb
-                slave_sniffer.connection.write(master_data) # connect data to slave
+                slave_sniffer.serial.write(master_data) # connect data to slave
             except Empty:
                 break
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
                 slave_data = sq.get()  # read response from slave server
             except Empty:
                 break
-            master_sniffer.connection.write(slave_data) # send slave response to master
+            master_sniffer.serial.write(slave_data) # send slave response to master
             slave_sniffer.process(slave_data) # read slave packet
             master_sniffer.process(master_data) # read master packet
     finally:

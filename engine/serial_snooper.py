@@ -22,7 +22,7 @@ class SerialSnooper:
         logger.debug('SerialSnooper.__init__')
         self.port = port
         self.baud = baud
-        self.connection = serial.Serial(port, baud, timeout=float(
+        self.serial = serial.Serial(port, baud, timeout=float(
             self.kByteLength*self.kMaxReadSize)/baud)
         self.client_framer = ModbusRtuFramer(decoder=ClientDecoder())
         self.server_framer = ModbusRtuFramer(decoder=ServerDecoder())
@@ -34,17 +34,17 @@ class SerialSnooper:
         self.close()
 
     def open(self):
-        self.connection.open()
+        self.serial.open()
 
     def close(self):
-        self.connection.close()
+        self.serial.close()
 
     def server_packet_callback(self, *args, **kwargs):
         arg = 0
         for msg in args:
             func_name = str(type(msg)).split(
                 '.')[-1].strip("'><").replace("Request", "")
-            logger.debug(f"Master-> ID: {func_name}")
+            logger.info(f"Master-> ID: {func_name}")
             # logger.info(logger, "Master-> ID: {}, Function: {}: {}".format(
             #     msg.unit_id, func_name, msg.function_code))
             try:
@@ -69,14 +69,14 @@ class SerialSnooper:
         for msg in args:
             func_name = str(type(msg)).split(
                 '.')[-1].strip("'><").replace("Request", "")
-            logger.debug("Slave-> ID: {}, Function: {}: {}".format(
+            logger.info("Slave-> ID: {}, Function: {}: {}".format(
                 msg.unit_id, func_name, msg.function_code))
             arg += 1
             logger.debug('{}/{}\n'.format(arg, len(args)))
             process_meter_response(msg)
 
     def read_raw(self, n=16):
-        return self.connection.read(n)
+        return self.serial.read(n)
 
     def process(self, data, slave_address):
         if len(data) <= 0:
@@ -102,5 +102,5 @@ class SerialSnooper:
     def get_statistics(self):
         if (self.processedFramesCounter==0):
             return 0
-        return (1 - (self.processedFramesCounter - self.interceptedResponseFramesCounter) / self.processedFramesCounter) * 100
+        return ((self.interceptedResponseFramesCounter) / self.processedFramesCounter) * 100
 

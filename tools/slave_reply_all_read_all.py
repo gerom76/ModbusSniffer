@@ -84,11 +84,11 @@ if __name__ == "__main__":
             master_data = bytes()
             slave_data = bytes()
 
-            slave_data += slave_sniffer.connection.read(slave_sniffer.connection.in_waiting)  # read response from slave server
-            master_sniffer.connection.write(slave_data) # send slave response to master
+            slave_data += slave_sniffer.serial.read(slave_sniffer.serial.in_waiting)  # read response from slave server
+            master_sniffer.serial.write(slave_data) # send slave response to master
 
-            master_data += master_sniffer.connection.read(master_sniffer.connection.in_waiting)  # read data from usb
-            slave_sniffer.connection.write(master_data) # connect data to slave
+            master_data += master_sniffer.serial.read(master_sniffer.serial.in_waiting)  # read data from usb
+            slave_sniffer.serial.write(master_data) # connect data to slave
 
             slave_sniffer.process(slave_data) # read slave packet
             master_sniffer.process(master_data) # read master packet
