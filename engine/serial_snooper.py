@@ -2,7 +2,7 @@ import logging
 import serial
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import ModbusRtuFramer
-
+from api.web_app import update_sniffing_quality
 #import pymodbus
 #from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets
@@ -17,7 +17,7 @@ class SerialSnooper:
     kByteLength = 10
     processedFramesCounter = 0
     interceptedResponseFramesCounter = 0
-
+    
     def __init__(self, port, baud=9600):
         logger.debug('SerialSnooper.__init__')
         self.port = port
@@ -26,6 +26,7 @@ class SerialSnooper:
             self.kByteLength*self.kMaxReadSize)/baud)
         self.client_framer = ModbusRtuFramer(decoder=ClientDecoder())
         self.server_framer = ModbusRtuFramer(decoder=ServerDecoder())
+        self.responseBuffer =  bytearray()
 
     def __enter__(self):
         return self
@@ -39,49 +40,53 @@ class SerialSnooper:
     def close(self):
         self.serial.close()
 
+    def read_raw(self, n=16):
+        # response = self.serial.read(self.serial.in_waiting)
+        response = self.serial.read(n)
+        self.responseBuffer += response
+        return response
+
     def server_packet_callback(self, *args, **kwargs):
+        logger.info(f"responseBuffer: {self.responseBuffer.hex()}")
+        # TODO: start recording for this buffer till next master packet
+        self.responseBuffer = bytearray()
         arg = 0
+        address = 'unknown'
+        count = 0
+        values = 'empty'
         for msg in args:
             func_name = str(type(msg)).split(
                 '.')[-1].strip("'><").replace("Request", "")
-            logger.info(f"Master-> ID: {func_name}")
-            # logger.info(logger, "Master-> ID: {}, Function: {}: {}".format(
-            #     msg.unit_id, func_name, msg.function_code))
             try:
-                logger.debug("Address: {}".format(msg.address))
-                logger.debug("server_ok")
+                address = msg.address
             except AttributeError:
                 pass
             try:
-                logger.debug("Count: {}".format(msg.count))
+                count = msg.count
             except AttributeError:
                 pass
             try:
-                logger.debug("Data: {}".format(msg.values))
+                values = msg.values
             except AttributeError:
                 pass
             arg += 1
-            logger.debug('{}/{}\n'.format(arg, len(args)))
+            logger.info(f"Master Request-> ID: {msg.unit_id} arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code} address: {address} ({count}) values:{values}")
+            # logger.debug('{}/{}\n'.format(arg, len(args)))
 
     def client_packet_callback(self, *args, **kwargs):
         self.interceptedResponseFramesCounter += 1
         arg = 0
         for msg in args:
             func_name = str(type(msg)).split(
-                '.')[-1].strip("'><").replace("Request", "")
-            logger.info("Slave-> ID: {}, Function: {}: {}".format(
-                msg.unit_id, func_name, msg.function_code))
+                '.')[-1].strip("'><").replace("Response", "")
             arg += 1
-            logger.debug('{}/{}\n'.format(arg, len(args)))
+            logger.info(f"Slave Response-> ID: {msg.unit_id}, arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code}")
             process_meter_response(msg)
-
-    def read_raw(self, n=16):
-        return self.serial.read(n)
 
     def process(self, data, slave_address):
         if len(data) <= 0:
             return
-        logger.debug(f'data: {data}')
+        logger.info(f'data: {data.hex()}')
         self.processedFramesCounter += 1
         try:
             logger.debug("Check Client")
@@ -98,6 +103,8 @@ class SerialSnooper:
         except (IndexError, TypeError, KeyError) as e:
             logger.debug(e)
             pass
+        statistics = self.get_statistics()
+        update_sniffing_quality(statistics)
 
     def get_statistics(self):
         if (self.processedFramesCounter==0):

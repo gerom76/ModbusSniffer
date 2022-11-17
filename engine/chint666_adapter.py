@@ -9,7 +9,8 @@ logger = logging.getLogger()
 
 def process_meter_response(msg):
     try:
-        logger.info(f'Processing msg: {msg} {msg.registers}')
+        data = ' '.join([hex(i) for i in msg.registers])
+        logger.info(f'Processing msg: {msg} \n{data}\n{msg.registers}')
         count = len(msg.registers)
         if count == 60:
             logger.debug(f'Power data')
