@@ -20,14 +20,14 @@ def get_console_handler():
 
 def get_file_handler():
     #file_handler = TimedRotatingFileHandler(LOG_FILE, when='midnight')
-    # file_handler = logging.handlers.RotatingFileHandler(LOG_FILE, maxBytes=1000000, backupCount=3,)
-    file_handler = logging.FileHandler(LOG_FILE)
+    file_handler = logging.handlers.RotatingFileHandler(LOG_FILE, maxBytes=1000000, backupCount=3,)
+    # file_handler = logging.FileHandler(LOG_FILE)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter(FORMAT))
     return file_handler
 
 def setup_logger(logger_name):
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.WARN)
     logger = logging.getLogger(logger_name)
     coloredlogs.install(level=logging.DEBUG, logger=logger, fmt= FORMAT)
     # better to have too much log than not enough

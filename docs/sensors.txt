@@ -1,0 +1,142 @@
+Podsyłam mój config w pliku sensors.yaml trzeba dopisać następujace linijki:
+
+  - platform: rest
+    name: licznik_chnt666
+    json_attributes_path: "$.data.tblDTSU[0]"
+    scan_interval: 15
+    json_attributes:
+      - em_Uab
+      - em_Ubc
+      - em_Uca
+      - em_Ua
+      - em_Ub
+      - em_Uc
+      - em_Ia
+      - em_Ib
+      - em_Ic
+      - em_Pt
+      - em_Pa
+      - em_Pb
+      - em_Pc
+      - em_Freq
+      - em_ImpEp
+      - em_ExpEp
+    resource: http://192.168.8.8/public
+    value_template: "{{ value_json.data.tblDTSU[0].em_Status }}"
+  - platform: template
+    sensors:
+      faza_1_napiecie:
+        friendly_name: "Napięcie na fazie 1"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Ua') }}"
+        unit_of_measurement: "V"
+        icon_template: mdi:lightning-bolt-circle
+        device_class: voltage
+#        state_class: measurement
+      faza_2_napiecie:
+        friendly_name: "Napięcie na fazie 2"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Ub') }}"
+        unit_of_measurement: "V"
+        icon_template: mdi:lightning-bolt-circle
+        device_class: voltage
+#        state_class: measurement
+      faza_3_napiecie:
+        friendly_name: "Napięcie na fazie 3"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Uc') }}"
+        unit_of_measurement: "V"
+        icon_template: mdi:lightning-bolt-circle
+        device_class: voltage
+#        state_class: measurement
+      faza_1_prad:
+        friendly_name: "Prąd fazy 1"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Ia') }}"
+        unit_of_measurement: "A"
+        icon_template: mdi:current-ac
+        device_class: current
+#        state_class: measurement
+      faza_2_prad:
+        friendly_name: "Prąd fazy 2"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Ib') }}"
+        unit_of_measurement: "A"
+        icon_template: mdi:current-ac
+        device_class: current
+#        state_class: measurement
+      faza_3_prad:
+        friendly_name: "Prąd fazy 3"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Ic') }}"
+        unit_of_measurement: "A"
+        icon_template: mdi:current-ac
+        device_class: current
+#        state_class: measurement
+      napiecie_miedzyfaz_ab:
+        friendly_name: "Napięcie międzyfazowe A-B"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Uab') }}"
+        unit_of_measurement: "V"
+        icon_template: mdi:lightning-bolt-circle
+        device_class: voltage
+#        state_class: measurement
+      napiecie_miedzyfaz_bc:
+        friendly_name: "Napięcie międzyfazowe B-C"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Ubc') }}"
+        unit_of_measurement: "V"
+        icon_template: mdi:lightning-bolt-circle
+        device_class: voltage
+#        state_class: measurement
+      napiecie_miedzyfaz_ca:
+        friendly_name: "Napięcie na fazie 1"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Uca') }}"
+        unit_of_measurement: "V"
+        icon_template: mdi:lightning-bolt-circle
+        device_class: voltage
+#        state_class: measurement
+      moc_calkowita:
+        friendly_name: "Suma mocy z wszystkich faz"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Pt') }}"
+        unit_of_measurement: "W"
+        icon_template: mdi:transmission-tower
+        device_class: power
+#        state_class: measurement
+      moc_faza_1:
+        friendly_name: "Moc na fazie 1"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Pa') }}"
+        unit_of_measurement: "W"
+        icon_template: mdi:transmission-tower
+        device_class: power
+#        state_class: measurement
+      moc_faza_2:
+        friendly_name: "Moc na fazie 2"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Pb') }}"
+        unit_of_measurement: "W"
+        icon_template: mdi:transmission-tower
+        device_class: power
+#        state_class: measurement
+      moc_faza_3:
+        friendly_name: "Moc na fazie 3"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Pc') }}"
+        unit_of_measurement: "W"
+        icon_template: mdi:transmission-tower
+        device_class: power
+#        state_class: measurement
+      czestotliwosc_sieci:
+        friendly_name: "Częstotliwość sieci"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_Freq') }}"
+        unit_of_measurement: "Hz"
+        icon_template: mdi:cosine-wave
+        device_class: frequency
+#        state_class: measurement
+      energia_import:
+        friendly_name: "Import energii z sieci"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_ImpEp') }}"
+        unit_of_measurement: "kWh"
+        icon_template: mdi:transmission-tower-import
+        device_class: energy
+#        state_class: total_increasing
+      energia_export:
+        friendly_name: "Import energii do sieci"
+        value_template: "{{ state_attr('sensor.licznik_chnt666', 'em_ExpEp') }}"
+        unit_of_measurement: "kWh"
+        icon_template: mdi:transmission-tower-export
+        device_class: energy
+#        state_class: total_increasing
+
+To wyciąga główne (nie wszystkie) pomiary (można sobie dopisać wg schematu...
+Żeby móc dodać wartości eksportu i importu należy stworzyć Helpera (settings/devices&services_zakładka helpers) Helper 'utility meter'
