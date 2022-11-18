@@ -148,7 +148,7 @@ def update_statistics(queries_amount):
     with app.app_context():
         sm = db.session.execute(
             db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
-        sm[0].em_RdTime = datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f")
+        sm[0].em_RdTime = datetime.now().strftime("%Y/%m/%d/ %H:%M:%S.%f")
         sm[0].em_Queries = queries_amount
         db.session.commit()
 
