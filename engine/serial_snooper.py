@@ -47,7 +47,7 @@ class SerialSnooper:
         return response
 
     def server_packet_callback(self, *args, **kwargs):
-        logger.info(f"responseBuffer: {self.responseBuffer.hex()}")
+        logger.debug(f"responseBuffer: {self.responseBuffer.hex()}")
         # TODO: start recording for this buffer till next master packet
         self.responseBuffer = bytearray()
         arg = 0
@@ -86,7 +86,7 @@ class SerialSnooper:
     def process(self, data, slave_address):
         if len(data) <= 0:
             return
-        logger.info(f'data: {data.hex()}')
+        logger.debug(f'data: {data.hex()}')
         self.processedFramesCounter += 1
         try:
             logger.debug("Check Client")

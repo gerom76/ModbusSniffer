@@ -11,7 +11,7 @@ def process_meter_response(msg):
     try:
         data = ' '.join([str(i)+":"+hex(value) for i, value in enumerate(msg.registers)])
         count = len(msg.registers)
-        logger.info(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
+        logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
         if count == 60:
             logger.debug(f'Power data')
             power_data = decode_power(msg.registers)
@@ -33,7 +33,7 @@ def process_meter_response(msg):
 def log_decode_32bit_float(decoder: BinaryPayloadDecoder, count):
     decoder.reset()
     for i in range(count):
-        logger.info(f'{i}: {decoder.decode_32bit_float()},')
+        logger.debug(f'{i}: {decoder.decode_32bit_float()},')
     decoder.reset()
 
 def decode_range_32bit_float(decoder: BinaryPayloadDecoder, count):
