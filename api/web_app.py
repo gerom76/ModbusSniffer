@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -18,8 +19,11 @@ DTSU666 = 'dtsu666'
 
 class SmartMeter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
     sniffing_quality = db.Column(db.String)
+    em_Type = db.Column(db.String)
+    em_Status = db.Column(db.String)
+    em_RdTime = db.Column(db.String)
+    em_Queries = db.Column(db.String)
     em_Uab = db.Column(db.String)
     em_Ubc = db.Column(db.String)
     em_Uca = db.Column(db.String)
@@ -61,8 +65,11 @@ class SmartMeterSchema(Schema):
         self_view_many = 'smartmeter_many'
 
     id = fields.Integer()
-    name = fields.Str(required=True)
     sniffing_quality = fields.Str(required=True)
+    em_Type = fields.Str(required=True)
+    em_Status = fields.Str(required=True)
+    em_RdTime = fields.Str(required=False)
+    em_Queries = fields.Str(required=False)
     em_Uab = fields.Str(required=False)
     em_Ubc = fields.Str(required=False)
     em_Uca = fields.Str(required=False)
@@ -118,7 +125,7 @@ def setup_database():
     with app.app_context():
         db.create_all()
 
-        sm1 = SmartMeter(name=DTSU666, sniffing_quality='0')
+        sm1 = SmartMeter(em_Type=DTSU666,  em_Status='OK', sniffing_quality='0' )
         db.session.add(sm1)
         db.session.commit()
 
@@ -137,10 +144,18 @@ def setup_webapp_api():
     logger.info("setup_webapp_api finished")
 
 
+def update_statistics(queries_amount):
+    with app.app_context():
+        sm = db.session.execute(
+            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
+        sm[0].em_RdTime = datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f")
+        sm[0].em_Queries = queries_amount
+        db.session.commit()
+
 def update_sniffing_quality(value):
     with app.app_context():
         sm = db.session.execute(
-            db.select(SmartMeter).filter_by(name=DTSU666)).one()
+            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
         sm[0].sniffing_quality = value
         db.session.commit()
 
@@ -148,10 +163,9 @@ def update_sniffing_quality(value):
 def update_electricity(dictData):
     with app.app_context():
         sm = db.session.execute(
-            db.select(SmartMeter).filter_by(name=DTSU666)).one()
+            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
         entry = sm[0]
         for name, value in iter(dictData.items()):
-            # entry.__dict__[name]=value
             setattr(entry, name, value)
         db.session.commit()
 
@@ -159,7 +173,7 @@ def update_electricity(dictData):
 def update_power(dictData):
     with app.app_context():
         sm = db.session.execute(
-            db.select(SmartMeter).filter_by(name=DTSU666)).one()
+            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
         entry = sm[0]
         for name, value in iter(dictData.items()):
             setattr(entry, name, value)

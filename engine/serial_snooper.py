@@ -3,13 +3,12 @@ import serial
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from pymodbus.transaction import ModbusRtuFramer
 from api.web_app import update_sniffing_quality
+from engine.chint666_adapter import Chint666Adapter
 #import pymodbus
 #from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets
 #from binascii import b2a_hex
 # from time import sleep
-
-from engine.chint666_adapter import process_meter_response
 
 logger = logging.getLogger()
 class SerialSnooper:
@@ -27,6 +26,7 @@ class SerialSnooper:
         self.client_framer = ModbusRtuFramer(decoder=ClientDecoder())
         self.server_framer = ModbusRtuFramer(decoder=ServerDecoder())
         self.responseBuffer =  bytearray()
+        self.chint666Adapter = Chint666Adapter()
 
     def __enter__(self):
         return self
@@ -81,7 +81,7 @@ class SerialSnooper:
                 '.')[-1].strip("'><").replace("Response", "")
             arg += 1
             logger.info(f"Slave Response-> ID: {msg.unit_id}, arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code}")
-            process_meter_response(msg)
+            self.chint666Adapter.process_meter_response(msg)
 
     def process(self, data, slave_address):
         if len(data) <= 0:

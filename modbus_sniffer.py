@@ -1,17 +1,16 @@
+import sys
 import logging
 import threading
 import time
-from api.web_app import get_app, setup_webapp_api
 
 from common.smartLogger import setup_logger
-
 setup_logger(__package__)
 
-import sys
-
+from api.web_app import get_app, setup_webapp_api
 from engine.serial_snooper import SerialSnooper
 
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 def run_webserver(app: any):
     logger.info("Web server thread starting")
