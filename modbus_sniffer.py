@@ -15,7 +15,7 @@ logger.setLevel(logging.WARN)
 def run_webserver(app: any):
     logger.warning("Web server thread starting")
     from waitress import serve
-    serve(app, host="0.0.0.0", port=8080)
+    serve(app, host="0.0.0.0", port=8081)
     logger.warning("Web server thread finishing")
 
 def run_sniffer(serialSnooper: SerialSnooper, port, baud, slave_address):
