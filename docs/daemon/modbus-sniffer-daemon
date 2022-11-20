@@ -8,9 +8,9 @@
 # Description:       Home\ Assistant
 ### END INIT INFO
 
-# /etc/init.d Service Script for Home Assistant
+# /etc/init.d Service Script for Modbus-Sniffer
 # Created with: https://gist.github.com/naholyr/4275302#file-new-service-sh
-PRE_EXEC="cd /srv/homeassistant; python3.9 -m venv .; source bin/activate;"
+PRE_EXEC="cd ~/source/ContribRepos/ModbusSniffer;"
 # Typically /usr/bin/hass
 HASS_BIN="/srv/homeassistant/bin/hass"
 RUN_AS="homeassistant"

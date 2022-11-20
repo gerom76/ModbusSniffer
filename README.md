@@ -16,13 +16,24 @@ usbipd wsl attach --busid 2-11
 linux:
 sudo chmod 666 /dev/ttyUSB0
 
+
+-----------------------------------------------------
+run in background:
 cd ~/source/ContribRepos/ModbusSniffer
 ./run_sniffer.sh &
 
 to terminate use:
 ps
 kill
+-----------------------------------------------------
+Install daemon:
 
+sudo apt install daemonize
+sudo cp docs/daemon/modbus-sniffer-daemon /etc/init.d/
+sudo chmod +x /etc/init.d/modbus-sniffer-daemon
+sudo cp docs/daemon/modbus-sniffer._log /var/log/modbus-sniffer/modbus-sniffer.log
+
+sudo service modbus-sniffer start
 -----------------------------------------------------
 
 Start Homassistant service:

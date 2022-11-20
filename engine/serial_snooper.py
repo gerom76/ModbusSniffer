@@ -17,10 +17,11 @@ class SerialSnooper:
     processedFramesCounter = 0
     interceptedResponseFramesCounter = 0
     
-    def __init__(self, port, baud=9600):
+    def __init__(self, port, baud=9600, slave_address=1):
         logger.debug('SerialSnooper.__init__')
         self.port = port
         self.baud = baud
+        self.slave_address = slave_address
         self.serial = serial.Serial(port, baud, timeout=float(
             self.kByteLength*self.kMaxReadSize)/baud)
         self.client_framer = ModbusRtuFramer(decoder=ClientDecoder())
@@ -71,7 +72,6 @@ class SerialSnooper:
                 pass
             arg += 1
             logger.info(f"Master Request-> ID: {msg.unit_id} arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code} address: {address} ({count}) values:{values}")
-            # logger.debug('{}/{}\n'.format(arg, len(args)))
 
     def client_packet_callback(self, *args, **kwargs):
         self.interceptedResponseFramesCounter += 1

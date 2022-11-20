@@ -31,22 +31,20 @@ def run_sniffer(serialSnooper: SerialSnooper, port, baud, slave_address):
 if __name__ == "__main__":
     logger.debug("__main__.Begin")
     baud = 9600
+    slave_address = 1
     try:
         port = sys.argv[1]
     except IndexError:
-        print("Usage: python3 {} device [baudrate, default={}]".format(
-            sys.argv[0], baud))
+        print(f"Usage: python3 {sys.argv[0]} device [baudrate, default={baud}] [slave_address, default={slave_address}]")
         sys.exit(-1)
     try:
         baud = int(sys.argv[2])
+        slave_address = int(sys.argv[3])
     except (IndexError, ValueError):
         pass
-
-    slave_address = 1
-
     setup_webapp_api()
     #sys.exit(0)
-    ss = SerialSnooper(port, baud)
+    ss = SerialSnooper(port, baud, slave_address)
 
     web_server_thread = threading.Thread(target=run_webserver, args=(get_app(),), daemon=True)
     sniffer_thread = threading.Thread(target=run_sniffer, args=(ss, port, baud, slave_address), daemon=True)
