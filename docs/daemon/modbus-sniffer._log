@@ -1,0 +1,11 @@
+{
+        rotate 7
+        daily
+        missingok
+        notifempty
+        delaycompress
+        compress
+        postrotate
+                invoke-rc.d modbus-sniffer restart > /dev/null
+        endscript
+}

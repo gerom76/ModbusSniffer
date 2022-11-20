@@ -31,7 +31,10 @@ Install daemon:
 sudo apt install daemonize
 sudo cp docs/daemon/modbus-sniffer-daemon /etc/init.d/
 sudo chmod +x /etc/init.d/modbus-sniffer-daemon
+sudo mkdir /var/log/modbus-sniffer
 sudo cp docs/daemon/modbus-sniffer._log /var/log/modbus-sniffer/modbus-sniffer.log
+
+sudo service modbus-sniffer install
 
 sudo service modbus-sniffer start
 -----------------------------------------------------

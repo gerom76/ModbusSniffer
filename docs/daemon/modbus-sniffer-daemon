@@ -12,7 +12,7 @@
 # Created with: https://gist.github.com/naholyr/4275302#file-new-service-sh
 PRE_EXEC="cd /srv/modbus-sniffer;"
 # Typically /srv/modbus-sniffer/modbus-sniffer.sh
-HASS_BIN=".modbus-sniffer.sh"
+APP_BIN="modbus-sniffer.sh"
 RUN_AS="homeassistant"
 PID_DIR="/var/run/modbus-sniffer"
 PID_FILE="$PID_DIR/modbus-sniffer.pid"
@@ -29,7 +29,7 @@ start() {
     return 1
   fi
   echo -n 'Starting serviceâ€¦ ' >&2
-  local CMD="$PRE_EXEC $DAEMONIZE $HASS_BIN $FLAGS"
+  local CMD="$PRE_EXEC $DAEMONIZE $APP_BIN $FLAGS"
   su -s /bin/bash -c "$CMD" $RUN_AS
   if [ $? -ne 0 ]; then
     echo "Failed" >&2
@@ -51,7 +51,7 @@ stop() {
 }
 
 install() {
-  echo "Installing Home Assistant Daemon (hass-daemon)"
+  echo "Installing Modbus Sniffer Daemon (modbus-sniffer-daemon)"
   update-rc.d modbus-sniffer-daemon defaults
   create_piddir
   mkdir -p $CONFIG_DIR
@@ -74,7 +74,7 @@ uninstall() {
     echo $LOG_DIR
     update-rc.d -f modbus-sniffer-daemon remove
     rm -fv "$0"
-    echo "Home Assistant Daemon has been removed. Home Assistant is still installed."
+    echo "Modbus Sniffer Daemon has been removed. Modbus Sniffer is still installed."
   fi
 }
 
