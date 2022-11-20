@@ -32,6 +32,7 @@ if __name__ == "__main__":
     logger.debug("__main__.Begin")
     baud = 9600
     slave_address = 1
+    in_memory = True
     try:
         port = sys.argv[1]
     except IndexError:
@@ -42,7 +43,7 @@ if __name__ == "__main__":
         slave_address = int(sys.argv[3])
     except (IndexError, ValueError):
         pass
-    setup_webapp_api()
+    setup_webapp_api(in_memory)
     #sys.exit(0)
     ss = SerialSnooper(port, baud, slave_address)
 

@@ -11,7 +11,8 @@ app.config['DEBUG'] = True
 APPNAME= 'ModbusSniffer'
 APPVER= '1.0.1'
 DBNAME = 'modbussniffer'
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DBNAME}.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DBNAME}.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///:memory:'
 db = SQLAlchemy(app)
 DTSU666 = 'DTSU666'
 
@@ -52,15 +53,28 @@ def setup_database(started):
         sm1 = SmartMeter(em_Type=DTSU666, em_Status='OK', sniffing_quality='0')
         db.session.add(sm1)
         db.session.commit()
-
-
-def setup_webapp_api():
-    logger.warning("setup_webapp_api starting")
-    started = datetime.now().strftime("%Y/%m/%d/ %H:%M:%S")
+        
+def init_file_database(started):
+    # set it net to imports:
+    # app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DBNAME}.db'
     if database_exists(f'sqlite:///instance/{DBNAME}.db'):
         update_app_info_started(started)
     else:
         setup_database(started)
+
+def init_inmemory_database(started):
+    # set it net to imports:
+    # app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///:memory:'
+    setup_database(started)
+
+def setup_webapp_api(inmemory: bool):
+    logger.warning("setup_webapp_api starting")
+    started = datetime.now().strftime("%Y/%m/%d/ %H:%M:%S")
+    if inmemory:
+        init_file_database(started)
+    else:
+        init_inmemory_database(started)
+    
     # @app.route('/info')
     # def info():
     #     return f'{"app":"Modbus Sniffer", "ver":"1.0.1", run:{started}}'
