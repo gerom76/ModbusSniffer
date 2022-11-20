@@ -10,7 +10,7 @@
 
 # /etc/init.d Service Script for Modbus-Sniffer
 # Created with: https://gist.github.com/naholyr/4275302#file-new-service-sh
-PRE_EXEC="cd /srv/modbus-sniffer;"
+PRE_EXEC="cd /srv/modbus-sniffer; python3.9 -m venv .; source bin/activate;"
 # Typically /srv/modbus-sniffer/modbus-sniffer.sh
 APP_BIN="/srv/modbus-sniffer/modbus-sniffer.sh"
 RUN_AS="homeassistant"
@@ -58,6 +58,8 @@ install() {
   chown $RUN_AS $CONFIG_DIR
   mkdir -p $LOG_DIR
   chown $RUN_AS $LOG_DIR
+  cd /srv/modbus-sniffer
+  sudo pip install -r requirements.txt
 }
 
 uninstall() {
