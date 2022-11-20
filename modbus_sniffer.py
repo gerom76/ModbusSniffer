@@ -16,17 +16,17 @@ def run_webserver(app: any):
     logger.info("Web server thread starting")
     from waitress import serve
     serve(app, host="0.0.0.0", port=8080)
-    logger.info("Web server thread finishing")
+    logger.warning("Web server thread finishing")
 
 def run_sniffer(serialSnooper: SerialSnooper, port, baud, slave_address):
     read_size = 128
-    logger.info(f"Starting sniffing for port:{port} baud:{baud} read_size:{read_size} slave_address:{slave_address}")
+    logger.warning(f"Starting sniffing for port:{port} baud:{baud} read_size:{read_size} slave_address:{slave_address}")
     while True:
         data = serialSnooper.read_raw(read_size)
         if len(data):
             serialSnooper.process(data, slave_address)
             # time.sleep(float(1)/ss.baud)
-    logger.info("Sniffer thread  finishing")
+    logger.warning("Sniffer thread  finishing")
 
 if __name__ == "__main__":
     logger.debug("__main__.Begin")
