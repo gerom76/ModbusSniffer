@@ -1,13 +1,9 @@
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy.orm import declarative_base
-
+from sqlalchemy import Column, Integer, String
 from marshmallow_jsonapi.flask import Schema
 from marshmallow_jsonapi import fields
-
 from api.web_app import get_db
 
+# from sqlalchemy.orm import declarative_base
 # Base = declarative_base()
 
 class SmartMeter(get_db().Model):
