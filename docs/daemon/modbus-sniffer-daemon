@@ -12,7 +12,7 @@
 # Created with: https://gist.github.com/naholyr/4275302#file-new-service-sh
 PRE_EXEC="cd /srv/modbus-sniffer;"
 # Typically /srv/modbus-sniffer/modbus-sniffer.sh
-APP_BIN="modbus-sniffer.sh"
+APP_BIN="/srv/modbus-sniffer/modbus-sniffer.sh"
 RUN_AS="homeassistant"
 PID_DIR="/var/run/modbus-sniffer"
 PID_FILE="$PID_DIR/modbus-sniffer.pid"

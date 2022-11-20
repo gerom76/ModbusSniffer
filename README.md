@@ -33,10 +33,12 @@ sudo cp docs/daemon/modbus-sniffer-daemon /etc/init.d/
 sudo chmod +x /etc/init.d/modbus-sniffer-daemon
 sudo mkdir /var/log/modbus-sniffer
 sudo cp docs/daemon/modbus-sniffer._log /var/log/modbus-sniffer/modbus-sniffer.log
+sudo cp -r ~/source/ContribRepos/ModbusSniffer/* /srv/modbus-sniffer/
 
-sudo service modbus-sniffer install
+sudo service modbus-sniffer-daemon install
 
-sudo service modbus-sniffer start
+sudo service modbus-sniffer-daemon start
+sudo service modbus-sniffer-daemon stop
 -----------------------------------------------------
 
 Start Homassistant service:
