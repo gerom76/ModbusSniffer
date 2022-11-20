@@ -1,26 +1,26 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          hass
+# Provides:          modbus-sniffer
 # Required-Start:    $local_fs $network $named $time $syslog
 # Required-Stop:     $local_fs $network $named $time $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Description:       Home\ Assistant
+# Description:       Modbus-Sniffer
 ### END INIT INFO
 
 # /etc/init.d Service Script for Modbus-Sniffer
 # Created with: https://gist.github.com/naholyr/4275302#file-new-service-sh
-PRE_EXEC="cd ~/source/ContribRepos/ModbusSniffer;"
-# Typically /usr/bin/hass
-HASS_BIN="/srv/homeassistant/bin/hass"
+PRE_EXEC="cd /srv/modbus-sniffer;"
+# Typically /srv/modbus-sniffer/modbus-sniffer.sh
+HASS_BIN=".modbus-sniffer.sh"
 RUN_AS="homeassistant"
-PID_DIR="/var/run/hass"
-PID_FILE="$PID_DIR/hass.pid"
+PID_DIR="/var/run/modbus-sniffer"
+PID_FILE="$PID_DIR/modbus-sniffer.pid"
 CONFIG_DIR="/home/$RUN_AS/.homeassistant"
-LOG_DIR="/var/log/homeassistant"
-LOG_FILE="$LOG_DIR/home-assistant.log"
+LOG_DIR="/var/log/modbus-sniffer"
+LOG_FILE="$LOG_DIR/modbus-sniffer.log"
 FLAGS="-v --config $CONFIG_DIR --log-file $LOG_FILE --log-rotate-days 7"
-DAEMONIZE="daemonize -c /srv/homeassistant -e $LOG_FILE.stderr -o $LOG_FILE.stdout -p $PID_FILE -l $PID_FILE -v"
+DAEMONIZE="daemonize -c /srv/modbus-sniffer -e $LOG_FILE.stderr -o $LOG_FILE.stdout -p $PID_FILE -l $PID_FILE -v"
 
 start() {
   create_piddir
@@ -52,7 +52,7 @@ stop() {
 
 install() {
   echo "Installing Home Assistant Daemon (hass-daemon)"
-  update-rc.d hass-daemon defaults
+  update-rc.d modbus-sniffer-daemon defaults
   create_piddir
   mkdir -p $CONFIG_DIR
   chown $RUN_AS $CONFIG_DIR
@@ -72,7 +72,7 @@ uninstall() {
     echo $CONFIG_DIR
     echo "Notice: The log directory has not been removed"
     echo $LOG_DIR
-    update-rc.d -f hass-daemon remove
+    update-rc.d -f modbus-sniffer-daemon remove
     rm -fv "$0"
     echo "Home Assistant Daemon has been removed. Home Assistant is still installed."
   fi

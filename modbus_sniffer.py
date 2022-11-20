@@ -13,7 +13,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.WARN)
 
 def run_webserver(app: any):
-    logger.info("Web server thread starting")
+    logger.warning("Web server thread starting")
     from waitress import serve
     serve(app, host="0.0.0.0", port=8080)
     logger.warning("Web server thread finishing")
