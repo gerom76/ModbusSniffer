@@ -24,10 +24,15 @@ class SerialSnooper:
         self.slave_address = slave_address
         self.serial = serial.Serial(port, baud, timeout=float(
             self.kByteLength*self.kMaxReadSize)/baud)
+        self.chint666Adapter = Chint666Adapter()
         self.client_framer = ModbusRtuFramer(decoder=ClientDecoder())
         self.server_framer = ModbusRtuFramer(decoder=ServerDecoder())
-        self.responseBuffer =  bytearray()
-        self.chint666Adapter = Chint666Adapter()
+        
+        # self.frameBuffer1 =  bytearray()
+        # self.frameBuffer2 =  bytearray()
+        # self.isProcessingRequest1 = True
+        # self.request1Adresss = ''
+        # self.request2Adresss = ''
 
     def __enter__(self):
         return self
@@ -47,6 +52,90 @@ class SerialSnooper:
     def read_in_waiting(self):
         return self.serial.read(self.serial.in_waiting)
 
+###################################################
+
+    def run_method_optimized(self, slave_address):
+        logger.warning(f"Starting method Optimized")
+        while True:
+            data = self.read_in_waiting()
+            if len(data) > 0:
+                logger.debug(f"data: {data.hex()}")
+                self.process_optimized(data, slave_address)
+            # self.frameBuffer1 = self.read_in_waiting()
+            # logger.debug(f"frameBuffer1: {self.frameBuffer1.hex()}")
+            # self.process_generic(self.frameBuffer1, slave_address)
+            # self.frameBuffer2 = self.read_in_waiting()
+            # logger.debug(f"frameBuffer2: {self.frameBuffer2.hex()}")
+            # self.process_generic(self.frameBuffer2, slave_address)
+
+    def process_optimized(self, data, slave_address):
+        logger.debug(f'optimized process: data={data.hex()}')
+
+        self.processedFramesCounter += 1
+
+        try:
+            logger.debug("Using server_framer")
+            self.server_framer.processIncomingPacket(
+                data, self.master_packet_callback, unit=slave_address, single=True)
+            pass
+        except (IndexError, TypeError, KeyError) as e:
+            logger.error(e)
+            pass
+        
+        try:
+            logger.debug("Using client_framer")
+            self.client_framer.processIncomingPacket(
+                data, self.slave_packet_callback, unit=slave_address, single=True)
+        except (IndexError, TypeError, KeyError) as e:
+            logger.error(e)
+            pass
+        
+        update_sniffing_quality(self.get_statistics())
+            
+            # time.sleep(float(1)/ss.baud)
+            
+    # def process_frame(self, requestBuffer, slave_address):
+    #     logger.debug(f'process request: requestBuffer={requestBuffer.hex()}')
+    #     if len(requestBuffer) <= 0:
+    #         return
+    #     try:
+    #         self.server_framer.processIncomingPacket(
+    #             requestBuffer, self.request_packet_callback, unit=slave_address, single=True)
+    #         pass
+    #     except (IndexError, TypeError, KeyError) as e:
+    #         logger.error(e)
+    #         pass
+
+
+    # def request_packet_callback(self, *args, **kwargs):
+    #     logger.debug(f"responseBuffer: {self.responseBuffer.hex()}")
+    #     # TODO: start recording for this buffer till next master packet
+    #     self.responseBuffer = bytearray()
+    #     arg = 0
+    #     address = 'unknown'
+    #     count = 0
+    #     for msg in args:
+    #         func_name = str(type(msg)).split(
+    #             '.')[-1].strip("'><").replace("Request", "")
+    #         try:
+    #             address = msg.address
+    #         except AttributeError:
+    #             pass
+    #         try:
+    #             count = msg.count
+    #         except AttributeError:
+    #             pass
+    #         arg += 1
+    #     logger.info(f"Master Request-> ID: {msg.unit_id} arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code} address: {address} ({count}) ")
+    #     if self.isProcessingRequest1:
+    #         self.request1Adresss = address
+    #         self.isProcessingRequest1 = False
+    #     else:
+    #         self.request2Adresss = address
+    #         self.isProcessingRequest1 = True
+
+######################################################
+
     def run_method_generic(self, slave_address):
         read_size = 128
         logger.warning(f"Starting method Generic: read_size:{read_size}")
@@ -54,28 +143,6 @@ class SerialSnooper:
             data = self.read_raw(read_size)
             self.process_generic(data, slave_address)
             # time.sleep(float(1)/ss.baud)
-
-    def run_method_optimized(self, slave_address):
-        logger.warning(f"Starting method Optimized")
-        while True:
-            data = self.read_in_waiting()
-            self.responseBuffer += data
-            self.process_request(data, slave_address)
-            # time.sleep(float(1)/ss.baud)
-            
-    def process_request(self, data, slave_address):
-        logger.debug(f'process request: data={self.responseBuffer.hex()}')
-        if len(self.responseBuffer) <= 0:
-            return
-        try:
-            logger.debug("Check Server")
-            self.server_framer.processIncomingPacket(
-                data, self.server_packet_callback, unit=slave_address, single=True)
-            pass
-        except (IndexError, TypeError, KeyError) as e:
-            logger.error(e)
-            pass
-        # TODO: process response
 
     def process_generic(self, data, slave_address):
         logger.debug(f'generic process: data={data.hex()}')
@@ -86,25 +153,25 @@ class SerialSnooper:
         try:
             logger.debug("Check Client")
             self.client_framer.processIncomingPacket(
-                data, self.client_packet_callback, unit=slave_address, single=True)
+                data, self.slave_packet_callback, unit=slave_address, single=True)
         except (IndexError, TypeError, KeyError) as e:
             logger.error(e)
             pass
         try:
             logger.debug("Check Server")
             self.server_framer.processIncomingPacket(
-                data, self.server_packet_callback, unit=slave_address, single=True)
+                data, self.master_packet_callback, unit=slave_address, single=True)
             pass
         except (IndexError, TypeError, KeyError) as e:
             logger.error(e)
             pass
-        statistics = self.get_statistics()
-        update_sniffing_quality(statistics)
 
-    def server_packet_callback(self, *args, **kwargs):
-        logger.debug(f"responseBuffer: {self.responseBuffer.hex()}")
-        # TODO: start recording for this buffer till next master packet
-        self.responseBuffer = bytearray()
+        update_sniffing_quality(self.get_statistics())
+
+    def master_packet_callback(self, *args, **kwargs):
+        # logger.debug(f"responseBuffer: {self.responseBuffer.hex()}")
+        # # TODO: start recording for this buffer till next master packet
+        # self.responseBuffer = bytearray()
         arg = 0
         address = 'unknown'
         count = 0
@@ -127,7 +194,7 @@ class SerialSnooper:
             arg += 1
             logger.info(f"Master Request-> ID: {msg.unit_id} arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code} address: {address} ({count}) values:{values}")
 
-    def client_packet_callback(self, *args, **kwargs):
+    def slave_packet_callback(self, *args, **kwargs):
         self.interceptedResponseFramesCounter += 1
         arg = 0
         for msg in args:
