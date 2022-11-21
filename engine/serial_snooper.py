@@ -84,16 +84,17 @@ class SerialSnooper:
             self.chint666Adapter.process_meter_response(msg)
 
     def process(self, data, slave_address):
+        logger.debug(f'process: data={data.hex()}')
         if len(data) <= 0:
             return
-        logger.debug(f'data: {data.hex()}')
+  
         self.processedFramesCounter += 1
         try:
             logger.debug("Check Client")
             self.client_framer.processIncomingPacket(
                 data, self.client_packet_callback, unit=slave_address, single=True)
         except (IndexError, TypeError, KeyError) as e:
-            logger.debug(e)
+            logger.error(e)
             pass
         try:
             logger.debug("Check Server")
@@ -101,7 +102,7 @@ class SerialSnooper:
                 data, self.server_packet_callback, unit=slave_address, single=True)
             pass
         except (IndexError, TypeError, KeyError) as e:
-            logger.debug(e)
+            logger.error(e)
             pass
         statistics = self.get_statistics()
         update_sniffing_quality(statistics)

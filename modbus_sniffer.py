@@ -23,9 +23,8 @@ def run_sniffer(serialSnooper: SerialSnooper, port, baud, slave_address):
     logger.warning(f"Starting sniffing for port:{port} baud:{baud} read_size:{read_size} slave_address:{slave_address}")
     while True:
         data = serialSnooper.read_raw(read_size)
-        if len(data):
-            serialSnooper.process(data, slave_address)
-            # time.sleep(float(1)/ss.baud)
+        serialSnooper.process(data, slave_address)
+        # time.sleep(float(1)/ss.baud)          
     logger.warning("Sniffer thread  finishing")
 
 if __name__ == "__main__":

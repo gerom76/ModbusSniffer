@@ -53,7 +53,6 @@ def setup_database(started):
         sm1 = SmartMeter(em_Type=DTSU666, em_Status='OK', sniffing_quality='0')
         db.session.add(sm1)
         db.session.commit()
-        
 def init_file_database(started):
     # set it net to imports:
     # app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DBNAME}.db'
@@ -74,7 +73,7 @@ def setup_webapp_api(inmemory: bool):
         init_file_database(started)
     else:
         init_inmemory_database(started)
-    
+
     # @app.route('/info')
     # def info():
     #     return f'{"app":"Modbus Sniffer", "ver":"1.0.1", run:{started}}'
@@ -94,20 +93,31 @@ def update_app_info_started(started):
         inf[0].app_started = started
         db.session.commit()
 
-def update_statistics(queries_amount):
-    with app.app_context():
-        sm = db.session.execute(
-            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
-        sm[0].em_RdTime = datetime.now().strftime("%Y/%m/%d/ %H:%M:%S.%f")
-        sm[0].em_Queries = queries_amount
-        db.session.commit()
+#sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) cannot commit - no transaction is active
+#(Background on this error at: https://sqlalche.me/e/14/e3q8)
 
+def update_statistics(queries_amount):
+    try:
+        with app.app_context():
+            sm = db.session.execute(
+                db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
+            sm[0].em_RdTime = datetime.now().strftime("%Y/%m/%d/ %H:%M:%S.%f")
+            sm[0].em_Queries = queries_amount
+            db.session.commit()
+    except Exception as e:
+        logger.error(f'update_statistics: error:{e}')
+        pass
+        
 def update_sniffing_quality(value):
-    with app.app_context():
-        sm = db.session.execute(
-            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
-        sm[0].sniffing_quality = value
-        db.session.commit()
+    try:
+        with app.app_context():
+            sm = db.session.execute(
+                db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
+            sm[0].sniffing_quality = value
+            db.session.commit()
+    except Exception as e:
+        logger.error(f'update_sniffing_quality: error:{e}')
+        pass
 
 
 def update_electricity(dictData):
