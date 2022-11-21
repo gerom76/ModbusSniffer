@@ -42,10 +42,64 @@ class SerialSnooper:
         self.serial.close()
 
     def read_raw(self, n=16):
-        # response = self.serial.read(self.serial.in_waiting)
-        response = self.serial.read(n)
-        self.responseBuffer += response
-        return response
+        return self.serial.read(n)
+
+    def read_in_waiting(self):
+        return self.serial.read(self.serial.in_waiting)
+
+    def run_method_generic(self, slave_address):
+        read_size = 128
+        logger.warning(f"Starting method Generic: read_size:{read_size}")
+        while True:
+            data = self.read_raw(read_size)
+            self.process_generic(data, slave_address)
+            # time.sleep(float(1)/ss.baud)
+
+    def run_method_optimized(self, slave_address):
+        logger.warning(f"Starting method Optimized")
+        while True:
+            data = self.read_in_waiting()
+            self.responseBuffer += data
+            self.process_request(data, slave_address)
+            # time.sleep(float(1)/ss.baud)
+            
+    def process_request(self, data, slave_address):
+        logger.debug(f'process request: data={self.responseBuffer.hex()}')
+        if len(self.responseBuffer) <= 0:
+            return
+        try:
+            logger.debug("Check Server")
+            self.server_framer.processIncomingPacket(
+                data, self.server_packet_callback, unit=slave_address, single=True)
+            pass
+        except (IndexError, TypeError, KeyError) as e:
+            logger.error(e)
+            pass
+        # TODO: process response
+
+    def process_generic(self, data, slave_address):
+        logger.debug(f'generic process: data={data.hex()}')
+        if len(data) <= 0:
+            return
+
+        self.processedFramesCounter += 1
+        try:
+            logger.debug("Check Client")
+            self.client_framer.processIncomingPacket(
+                data, self.client_packet_callback, unit=slave_address, single=True)
+        except (IndexError, TypeError, KeyError) as e:
+            logger.error(e)
+            pass
+        try:
+            logger.debug("Check Server")
+            self.server_framer.processIncomingPacket(
+                data, self.server_packet_callback, unit=slave_address, single=True)
+            pass
+        except (IndexError, TypeError, KeyError) as e:
+            logger.error(e)
+            pass
+        statistics = self.get_statistics()
+        update_sniffing_quality(statistics)
 
     def server_packet_callback(self, *args, **kwargs):
         logger.debug(f"responseBuffer: {self.responseBuffer.hex()}")
@@ -82,30 +136,6 @@ class SerialSnooper:
             arg += 1
             logger.info(f"Slave Response-> ID: {msg.unit_id}, arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code}")
             self.chint666Adapter.process_meter_response(msg)
-
-    def process(self, data, slave_address):
-        logger.debug(f'process: data={data.hex()}')
-        if len(data) <= 0:
-            return
-  
-        self.processedFramesCounter += 1
-        try:
-            logger.debug("Check Client")
-            self.client_framer.processIncomingPacket(
-                data, self.client_packet_callback, unit=slave_address, single=True)
-        except (IndexError, TypeError, KeyError) as e:
-            logger.error(e)
-            pass
-        try:
-            logger.debug("Check Server")
-            self.server_framer.processIncomingPacket(
-                data, self.server_packet_callback, unit=slave_address, single=True)
-            pass
-        except (IndexError, TypeError, KeyError) as e:
-            logger.error(e)
-            pass
-        statistics = self.get_statistics()
-        update_sniffing_quality(statistics)
 
     def get_statistics(self):
         if (self.processedFramesCounter==0):
