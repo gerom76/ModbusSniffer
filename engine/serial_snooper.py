@@ -1,9 +1,10 @@
 import logging
 import serial
 from pymodbus.factory import ClientDecoder, ServerDecoder
-from pymodbus.transaction import ModbusRtuFramer
+# from pymodbus.transaction import ModbusRtuFramer
 from api.web_app import update_sniffing_quality
 from engine.chint666_adapter import Chint666Adapter
+from pymodbus.framer.rtu_framer import ModbusRtuFramer
 #import pymodbus
 #from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets
@@ -28,9 +29,13 @@ class SerialSnooper:
         self.client_framer = ModbusRtuFramer(decoder=ClientDecoder())
         self.server_framer = ModbusRtuFramer(decoder=ServerDecoder())
         
-        # self.frameBuffer1 =  bytearray()
+        self.frameBuffer1 =  bytearray()
         # self.frameBuffer2 =  bytearray()
-        # self.isProcessingRequest1 = True
+        self.isProcessingFrame1 = True
+        self.frame1Request =  bytearray()
+        self.frame2Request =  bytearray()
+        self.frame1Response =  bytearray()
+        self.frame2Response =  bytearray()
         # self.request1Adresss = ''
         # self.request2Adresss = ''
 
@@ -53,14 +58,45 @@ class SerialSnooper:
         return self.serial.read(self.serial.in_waiting)
 
 ###################################################
+# https://github.com/eterey/pymodbus3/blob/master/examples/contrib/message-parser.py
 
     def run_method_optimized(self, slave_address):
         logger.warning(f"Starting method Optimized")
         while True:
-            data = self.read_in_waiting()
-            if len(data) > 0:
-                logger.debug(f"data: {data.hex()}")
-                self.process_optimized(data, slave_address)
+            message = self.read_in_waiting()
+            if len(message) > 0:
+                logger.debug(f"message[{len(message)}]: {message.hex()}")
+                
+                if len(message)==8:
+                    logger.info(f"request (current): {message.hex()}")
+                    # self.client_framer.addToFrame(message)
+                    # if self.client_framer.checkFrame():
+                        # self.client_framer.advanceFrame()
+                    #self.client_framer.processIncomingPacket(message, self.master_packet_callback2, unit=slave_address, single=True)
+                    
+                    logger.info(f"response (previous): {self.frameBuffer1.hex()}")
+                    # self.server_framer.addToFrame(self.frameBuffer1)
+                    # if self.server_framer.checkFrame():
+                        # self.server_framer.advanceFrame()
+                    #self.server_framer.processIncomingPacket(self.frameBuffer1, self.slave_packet_callback2, unit=slave_address, single=True)
+                    
+                    if self.isProcessingFrame1:
+                        self.frame1Request = message
+                        self.frame2Response = self.frameBuffer1
+                        self.isProcessingFrame1 = False
+                    else:
+                        self.frame2Request = message
+                        self.frame1Response = self.frameBuffer1
+                        self.isProcessingFrame1 = True
+                        
+                    logger.info(f"F1 {self.frame1Request.hex()} {self.frame1Response.hex()}")
+                    logger.info(f"F2 {self.frame2Request.hex()} {self.frame2Response.hex()}")
+                    
+                    self.frameBuffer1 = bytearray()
+                else:
+                    self.frameBuffer1 += message
+                    
+                # self.process_optimized(message, slave_address)
             # self.frameBuffer1 = self.read_in_waiting()
             # logger.debug(f"frameBuffer1: {self.frameBuffer1.hex()}")
             # self.process_generic(self.frameBuffer1, slave_address)
@@ -68,29 +104,114 @@ class SerialSnooper:
             # logger.debug(f"frameBuffer2: {self.frameBuffer2.hex()}")
             # self.process_generic(self.frameBuffer2, slave_address)
 
-    def process_optimized(self, data, slave_address):
-        logger.debug(f'optimized process: data={data.hex()}')
+    def process_optimized(self, message, slave_address):
+        logger.debug(f'optimized process: message={message.hex()}')
 
         self.processedFramesCounter += 1
 
         try:
-            logger.debug("Using server_framer")
-            self.server_framer.processIncomingPacket(
-                data, self.master_packet_callback, unit=slave_address, single=True)
-            pass
-        except (IndexError, TypeError, KeyError) as e:
-            logger.error(e)
-            pass
-        
+            self.client_framer.addToFrame(message)
+            if self.client_framer.checkFrame():
+                self.client_framer.advanceFrame()
+                self.client_framer.processIncomingPacket(message, self.master_packet_callback2, unit=slave_address)
+            else: self.check_errors(self.server_framer, message)
+        except Exception as ex: 
+            self.check_errors(self.server_framer, message)
+    
         try:
-            logger.debug("Using client_framer")
-            self.client_framer.processIncomingPacket(
-                data, self.slave_packet_callback, unit=slave_address, single=True)
-        except (IndexError, TypeError, KeyError) as e:
-            logger.error(e)
-            pass
+            self.server_framer.addToFrame(message)
+            if self.server_framer.checkFrame():
+                self.server_framer.advanceFrame()
+                self.server_framer.processIncomingPacket(message, self.slave_packet_callback2, unit=slave_address)
+            else: self.check_errors(self.server_framer, message)
+        except Exception as ex: 
+            self.check_errors(self.server_framer, message)
+
+    def check_errors(self, decoder, message):
+        ''' Attempt to find message errors
+        :param message: The message to find errors in
+        '''
+        logger.debug(f'Check_errors: message={message.hex()}')
+        pass
+
+    def master_packet_callback2(self, *args, **kwargs):
+        # logger.debug(f"responseBuffer: {self.responseBuffer.hex()}")
+        # # TODO: start recording for this buffer till next master packet
+        # self.responseBuffer = bytearray()
+        arg = 0
+        address = 'unknown'
+        count = 0
+        values = 'empty'
+        for msg in args:
+            func_name = str(type(msg)).split(
+                '.')[-1].strip("'><").replace("Request", "")
+            try:
+                address = msg.address
+            except AttributeError:
+                pass
+            try:
+                count = msg.count
+            except AttributeError:
+                pass
+            try:
+                values = msg.values
+            except AttributeError:
+                pass
+            arg += 1
+            logger.info(f"Master Request-> ID: {msg.unit_id} arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code} address: {address} ({count}) values:{values}")
+
+
+    def slave_packet_callback2(self, *args, **kwargs):
+        self.interceptedResponseFramesCounter += 1
+        arg = 0
+        for msg in args:
+            func_name = str(type(msg)).split(
+                '.')[-1].strip("'><").replace("Response", "")
+            arg += 1
+            logger.info(f"Slave Response-> ID: {msg.unit_id}, arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code}")
+            self.chint666Adapter.process_meter_response(msg)
+
+
+    # def report(self, message):
+    #     ''' The callback to print the message information
+    #     :param message: The message to print
+    #     '''
+    #     print "%-15s = %s" % ('name', message.__class__.__name__)
+        # for k,v in message.__dict__.iteritems():
+        #     if isinstance(v, dict):
+        #         print "%-15s =" % k
+        #         for kk,vv in v.items():
+        #             print "  %-12s => %s" % (kk, vv)
+
+        #     elif isinstance(v, collections.Iterable):
+        #         print "%-15s =" % k
+        #         value = str([int(x) for x  in v])
+        #         for line in textwrap.wrap(value, 60):
+        #             print "%-15s . %s" % ("", line)
+        #     else: print "%-15s = %s" % (k, hex(v))
+        # print "%-15s = %s" % ('documentation', message.__doc__)
         
-        update_sniffing_quality(self.get_statistics())
+        
+        
+        
+        # try:
+        #     logger.debug("Using server_framer")
+        #     self.server_framer.processIncomingPacket(
+        #         data, self.master_packet_callback, unit=slave_address, single=True)
+        #     pass
+        # except (IndexError, TypeError, KeyError) as e:
+        #     logger.error(e)
+        #     pass
+        
+        # try:
+        #     logger.debug("Using client_framer")
+        #     self.client_framer.processIncomingPacket(
+        #         data, self.slave_packet_callback, unit=slave_address, single=True)
+        # except (IndexError, TypeError, KeyError) as e:
+        #     logger.error(e)
+        #     pass
+        
+        # update_sniffing_quality(self.get_statistics())
             
             # time.sleep(float(1)/ss.baud)
             
