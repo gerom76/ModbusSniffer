@@ -98,14 +98,14 @@ def test_decode_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
         (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAD", True),  # valid frame
         (b"\x11\x03\x06\xAE\x41\x56\x52\x43\x40\x49\xAC", False),  # invalid frame CRC
         (b"\x01\x04\x00\x00Rz7", False),
-        #(b"\x01\x04\x20\x00\x00\x52\x7A\x37", True),
+        (b"\x01\x04\x20\x00\x00\x52\x7A\x37", False),
     ],
 )
 def test_check_frame(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test check frame."""
     # value1 = '0104200000527A37'
-    # value2 =  bytearray.fromhex(value1)
-    # print(f'data1={value2}')
+    # value2 = bytearray.fromhex(value1)
+    # print(f'value2={value2}')
     data, expected = data
     rtu_framer._buffer = data  # pylint: disable=protected-access
     assert expected == rtu_framer.checkFrame()  # nosec
