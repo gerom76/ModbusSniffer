@@ -1,4 +1,9 @@
 --------------------------- https://rapidscada.net/modbus/
+# value1 = '0104200000527A37'
+# value2 =  bytearray.fromhex(value1)
+# data1 = 'x'.join([str(i)+":"+value for i, value in bytearray.fromhex(value1)])
+# (b"\x01\x04 \x00\x00Rz7"), True),
+
 zapytanie: 0104200000527A37
 01 04 20 00 00 52 7A 37
 echo -e '0x01 0x04 0x20 0x00 0x00 0x52 0x7A 0x37' > /dev/ttyUSB0

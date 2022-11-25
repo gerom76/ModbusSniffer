@@ -22,7 +22,11 @@ sudo chmod 666 /dev/ttyUSB0
 -----------------------------------------------------
 run in background:
 cd ~/source/ContribRepos/ModbusSniffer
-./run_sniffer.sh &
+./modbus-sniffer.sh &
+or
+python modbus_sniffer.py /dev/ttyUSB0 9600 1 generic
+
+
 
 to terminate use:
 ps

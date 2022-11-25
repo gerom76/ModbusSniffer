@@ -10,7 +10,7 @@ from api.web_app import get_app, setup_webapp_api
 from engine.serial_snooper import SerialSnooper
 
 logger = logging.getLogger()
-logger.setLevel(logging.WARN)
+logger.setLevel(logging.DEBUG)
 
 def run_webserver(app: any):
     logger.warning("Web server thread starting")

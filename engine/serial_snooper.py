@@ -70,6 +70,45 @@ class SerialSnooper:
                 if len(message)==8:
                     logger.info(f"request (current): {message.hex()}")
                     # self.client_framer.addToFrame(message)
+                    # data = self.client_framer.getRawFrame() # if error else self.getFrame()
+                    # logger.info(f"request (current): data {data}")
+                    # result = self.client_framer.decoder.decode(data)
+                    # logger.info(f"request (current): result {result}")
+                    # self.client_framer.resetFrame()
+                    
+                    self.server_framer.addToFrame(message)
+                    data = self.server_framer.getRawFrame() # if error else self.getFrame()
+                    logger.info(f"request (current): data {data}")
+                    result = self.server_framer.decoder.decode(data)
+                    logger.info(f"request (current): result {result}")
+                    self.server_framer.resetFrame()
+                    
+                    
+                    # if self.client_framer.checkFrame():
+                    #     data = self.client_framer.getRawFrame() # if error else self.getFrame()
+                    #     logger.info(f"request (current): data {data}")
+                    #     result = self.client_framer.decoder.decode(data)
+                    #     logger.info(f"request (current): result {result}")
+                    #     self.client_framer.populateResult(result)
+                    #     self.client_framer.advanceFrame()
+                    # else:
+                    #     logger.warning(f"invalid client message: {message.hex()}")
+                    #     self.client_framer.resetFrame()
+                        
+                    # self.server_framer.addToFrame(message)
+                    # if self.server_framer.checkFrame():
+                    #     data = self.server_framer.getRawFrame() # if error else self.getFrame()
+                    #     logger.info(f"request (current): data {data}")
+                    #     result = self.server_framer.decoder.decode(data)
+                    #     logger.info(f"request (current): result {result}")
+                    #     self.server_framer.populateResult(result)
+                    #     self.server_framer.advanceFrame()
+                    # else:
+                    #     logger.warning(f"invalid server message: {message.hex()}")
+                    #     self.server_framer.resetFrame()
+                        
+                        
+                        
                     # if self.client_framer.checkFrame():
                         # self.client_framer.advanceFrame()
                     #self.client_framer.processIncomingPacket(message, self.master_packet_callback2, unit=slave_address, single=True)
