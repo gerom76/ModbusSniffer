@@ -11,7 +11,7 @@ from pymodbus.framer.ascii_framer import ModbusAsciiFramer
 from pymodbus.framer.binary_framer import ModbusBinaryFramer
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import ModbusTransactionState
-
+from pymodbus.factory import ClientDecoder, ServerDecoder
 
 TEST_MESSAGE = b"\x00\x01\x00\x01\x00\n\xec\x1c"
 
@@ -89,6 +89,43 @@ def test_decode_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
     decoded = rtu_framer.decode_data(data)
     assert decoded == expected  # nosec
 
+resp1 = '0104A4458218004582180045821800451640004516400045164000415000004130000041400000C1300000C130000041100000C110000041A8000041900000C180000041980000429A000041C8000041C8000041C80000C3110000C3DC000043B38000C3B780004493C0004539D000448D0000000000000000000000000000000000000000000000000000459C30004110000047693B00000000000000000000000000000000002CF7'
+resp1b = bytearray.fromhex(resp1)
+@pytest.mark.parametrize("data", [b"\x01\x04\x20\x00\x00\x52\x7A\x37", resp1b ,b""])
+def test_decode_rtu_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
+    """Test decode rtu."""
+    decoded = rtu_framer.decode_data(data)
+    assert isinstance(decoded, dict)  # nosec
+    if decoded:
+        assert decoded.get("unit") == 1  # nosec
+        assert decoded.get("fcode") == 4  # nosec
+    else:
+        assert not decoded  # nosec
+
+@pytest.mark.parametrize("data", [resp1b ])
+def test_client_decode_rtu_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
+    """Test client decode rtu."""
+    sut = ModbusRtuFramer(decoder=ClientDecoder())
+    decoded = sut.decode_data(data)
+    assert isinstance(decoded, dict)  # nosec
+    if decoded:
+        assert decoded.get("unit") == 1  # nosec
+        assert decoded.get("fcode") == 4  # nosec
+    else:
+        assert not decoded  # nosec
+
+@pytest.mark.parametrize("data", [resp1b ])
+def test_server_decode_rtu_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
+    """Test server decode rtu."""
+    sut = ModbusRtuFramer(decoder=ServerDecoder())
+    decoded2 = sut.decode(data)
+    decoded = sut.decode_data(data)
+    assert isinstance(decoded, dict)  # nosec
+    if decoded:
+        assert decoded.get("unit") == 1  # nosec
+        assert decoded.get("fcode") == 4  # nosec
+    else:
+        assert not decoded  # nosec
 
 @pytest.mark.parametrize(
     "data",
