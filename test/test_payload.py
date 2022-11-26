@@ -353,7 +353,34 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         # Pc
         value = decoder.decode_32bit_float()
         self.assertEqual(value, -9)
-        
+        # Qt
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 21)
+        # Qa
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 18)
+        # Qb
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, -16)
+        # Qc
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 19)
+        # PFt
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 77)
+        # PFa
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 25)
+        # PFb
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 25)
+        # PFc
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 25)
+        # Freq
+        decoder.skip_bytes(52)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 4998)
     def test_payload_decoder_raw_response2(self):
         """Test the payload decoder functionality"""
         resp1 = '010478415170A4415170A400000000000000000000000041251EB841251EB8000000000000000000000000400AE148400AE148000000000000000000000000422B51EC422B51EC0000000000000000000000003F3333333F3333330000000000000000000000003F0F5C293F0F5C290000000000000000000000004FF2'
@@ -388,12 +415,15 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         for i in range(int(byte_count/4)):
             print(f'{i}: {decoder.decode_32bit_float()},')
             
-        decoder.reset()        
+        decoder.reset()
+        #ImpEp
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 13.09000015258789)
+        #ExpEp
         decoder.skip_bytes(16)
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 10.319999694824219)
+        #Q1Eq
         decoder.skip_bytes(16)
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 2.1700000762939453)
@@ -403,6 +433,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         decoder.skip_bytes(16)
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 0.699999988079071)
+        #Q4Eq
         decoder.skip_bytes(16)
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 0.5600000023841858)
