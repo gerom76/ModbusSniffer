@@ -285,7 +285,9 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
     def test_payload_decoder_raw_response1(self):
         """Test the payload decoder functionality"""
         resp1 = '0104A4458218004582180045821800451640004516400045164000415000004130000041400000C1300000C130000041100000C110000041A8000041900000C180000041980000429A000041C8000041C8000041C80000C3110000C3DC000043B38000C3B780004493C0004539D000448D0000000000000000000000000000000000000000000000000000459C30004110000047693B00000000000000000000000000000000002CF7'
+        print(resp1)
         data = bytearray.fromhex(resp1)
+        print(data)
         slave_adr = int(data[0])
         self.assertEqual(slave_adr, 1)
         func_code = int(data[1])
@@ -310,13 +312,20 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 4163)
+        decoder.reset()
         for i in range(int(byte_count/4)-2):
             print(f'{i}: {bytes(data[(i*4+3):(i*4+7)])} {decoder.decode_32bit_float()}')
+        decoder.reset()
+        for i in range(int(byte_count/4)):
+            print(f'{i}: {decoder.decode_32bit_float()},')
+        decoder.reset()
 
     def test_payload_decoder_raw_response2(self):
         """Test the payload decoder functionality"""
         resp1 = '010478415170A4415170A400000000000000000000000041251EB841251EB8000000000000000000000000400AE148400AE148000000000000000000000000422B51EC422B51EC0000000000000000000000003F3333333F3333330000000000000000000000003F0F5C293F0F5C290000000000000000000000004FF2'
+        print(resp1)
         data = bytearray.fromhex(resp1)
+        print(data)
         slave_adr = int(data[0])
         self.assertEqual(slave_adr, 1)
         func_code = int(data[1])
@@ -338,6 +347,10 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 13.09000015258789)
+        decoder.reset()
         for i in range(int(byte_count/4)-2):
             print(f'{i}: {bytes(data[(i*4+3):(i*4+7)])} {decoder.decode_32bit_float()}')
-
+        decoder.reset()
+        for i in range(int(byte_count/4)):
+            print(f'{i}: {decoder.decode_32bit_float()},')
+        decoder.reset()
