@@ -278,10 +278,10 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         data = bytearray.fromhex(resp1)
         slave_adr = int(data[0])
         func_code = int(data[1])
-        byte_count = int (data[2])
-        
-        x = [b"\x12", b"\x34", b"\x56", b"\x78"]
-        
+        byte_count = int(data[2])
+        crc = bytes(data[len(data)-3:len(data)-1])
+
+        # x = [b"\x12", b"\x34", b"\x56", b"\x78"] 
         # bytes(data[0:1]) ->  b'\x01'
         # bytes(data[1:2]) -> b'\x04'
         
