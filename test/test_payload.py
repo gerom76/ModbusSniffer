@@ -314,7 +314,8 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(value, 4163)
         decoder.reset()
         for i in range(int(byte_count/4)-2):
-            print(f'{i}: {bytes(data[(i*4+3):(i*4+7)])} {decoder.decode_32bit_float()}')
+            entry = data[(i*4+3):(i*4+7)]
+            print(f'{i}: {bytes(entry)} {entry.hex()} {decoder.decode_32bit_float()}')
         decoder.reset()
         for i in range(int(byte_count/4)):
             print(f'{i}: {decoder.decode_32bit_float()},')
@@ -349,7 +350,8 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(value, 13.09000015258789)
         decoder.reset()
         for i in range(int(byte_count/4)-2):
-            print(f'{i}: {bytes(data[(i*4+3):(i*4+7)])} {decoder.decode_32bit_float()}')
+            entry = data[(i*4+3):(i*4+7)]
+            print(f'{i}: {bytes(entry)} {entry.hex()} {decoder.decode_32bit_float()}')
         decoder.reset()
         for i in range(int(byte_count/4)):
             print(f'{i}: {decoder.decode_32bit_float()},')
