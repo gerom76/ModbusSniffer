@@ -310,17 +310,50 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         logger.debug(registers)
         print(registers)
         decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
-        value = decoder.decode_32bit_float()
-        self.assertEqual(value, 4163)
-        decoder.reset()
+
         for i in range(int(byte_count/4)-2):
             entry = data[(i*4+3):(i*4+7)]
             print(f'{i}: {bytes(entry)} {entry.hex()} {decoder.decode_32bit_float()}')
         decoder.reset()
         for i in range(int(byte_count/4)):
             print(f'{i}: {decoder.decode_32bit_float()},')
-        decoder.reset()
 
+        decoder.reset()
+        # Uab
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 4163)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 4163)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 4163)
+        # Ua
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 2404)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 2404)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 2404)
+        # Ia
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 13)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 11)
+        # Ic
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 12)
+        # Pt
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, -11)
+        # Pa
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, -11)
+        # Pb
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 9)
+        # Pc
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, -9)
+        
     def test_payload_decoder_raw_response2(self):
         """Test the payload decoder functionality"""
         resp1 = '010478415170A4415170A400000000000000000000000041251EB841251EB8000000000000000000000000400AE148400AE148000000000000000000000000422B51EC422B51EC0000000000000000000000003F3333333F3333330000000000000000000000003F0F5C293F0F5C290000000000000000000000004FF2'
