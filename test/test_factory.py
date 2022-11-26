@@ -53,6 +53,7 @@ class SimpleFactoryTest(unittest.TestCase):
         resp1b = bytearray.fromhex(resp1)
 
         self.response = (
+            (0x04, resp1b),  # read electricity data
             (0x01, b"\x01\x01\x01"),  # read coils
             (0x02, b"\x02\x01\x01"),  # read discrete inputs
             (0x03, b"\x03\x02\x01\x01"),  # read holding registers
@@ -81,7 +82,6 @@ class SimpleFactoryTest(unittest.TestCase):
                 0x2B,
                 b"\x2b\x0e\x01\x01\x00\x00\x01\x00\x01\x77",
             ),  # read device identification
-            (0x04, resp1b),  # read electricity data
         )
 
         self.exception = (
@@ -123,7 +123,7 @@ class SimpleFactoryTest(unittest.TestCase):
             response = self.client.lookupPduClass(func)
             self.assertNotEqual(response, None)
 
-    def test_request_ookup(self):
+    def test_request_lookup(self):
         """Test a working request factory lookup"""
         for func, _ in self.request:
             request = self.client.lookupPduClass(func)
@@ -132,7 +132,9 @@ class SimpleFactoryTest(unittest.TestCase):
     def test_response_working(self):
         """Test a working response factory decoders"""
         for func, msg in self.response:
-            self.client.decode(msg)
+            decoded = self.client.decode(msg)
+            print(f'func {func}; msg {msg}; decoded {decoded}')
+            x=0
 
     def test_response_errors(self):
         """Test a response factory decoder exceptions"""
