@@ -346,13 +346,30 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         logger.debug(registers)
         print(registers)
         decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
-        value = decoder.decode_32bit_float()
-        self.assertEqual(value, 13.09000015258789)
-        decoder.reset()
-        for i in range(int(byte_count/4)-2):
+
+        for i in range(int(byte_count/4)):
             entry = data[(i*4+3):(i*4+7)]
             print(f'{i}: {bytes(entry)} {entry.hex()} {decoder.decode_32bit_float()}')
+        
         decoder.reset()
         for i in range(int(byte_count/4)):
             print(f'{i}: {decoder.decode_32bit_float()},')
-        decoder.reset()
+            
+        decoder.reset()        
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 13.09000015258789)
+        decoder.skip_bytes(16)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 10.319999694824219)
+        decoder.skip_bytes(16)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 2.1700000762939453)
+        decoder.skip_bytes(16)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 42.83000183105469)
+        decoder.skip_bytes(16)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 0.699999988079071)
+        decoder.skip_bytes(16)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 0.5600000023841858)
