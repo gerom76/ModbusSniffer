@@ -6,12 +6,15 @@ utilities.
 * PayloadBuilder
 * PayloadDecoder
 """
+import logging
+import struct
 import unittest
 
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 
+logger = logging.getLogger()
 
 # ---------------------------------------------------------------------------#
 #  Fixture
@@ -266,3 +269,32 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertRaises(
             ParameterException, lambda: BinaryPayloadDecoder.fromCoils("abcd")
         )
+        
+
+
+    def test_payload_decoder_raw_response(self):
+        """Test the payload decoder functionality"""
+        resp1 = '0104A4458218004582180045821800451640004516400045164000415000004130000041400000C1300000C130000041100000C110000041A8000041900000C180000041980000429A000041C8000041C8000041C80000C3110000C3DC000043B38000C3B780004493C0004539D000448D0000000000000000000000000000000000000000000000000000459C30004110000047693B00000000000000000000000000000000002CF7'
+        data = bytearray.fromhex(resp1)
+        slave_adr = int(data[0])
+        func_code = int(data[1])
+        byte_count = int (data[2])
+        
+        x = [b"\x12", b"\x34", b"\x56", b"\x78"]
+        
+        # bytes(data[0:1]) ->  b'\x01'
+        # bytes(data[1:2]) -> b'\x04'
+        
+        payload = []
+        for i in range(byte_count):
+            j = i
+            payload.append(bytes(data[i+3:i+4]))
+        
+        builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
+        registers = builder.to_registers()
+        logger.debug(registers)
+        print(registers)
+        decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
+        value = decoder.decode_32bit_float()
+        self.assertEqual(value, 4163)
+
