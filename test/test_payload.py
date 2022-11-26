@@ -13,7 +13,12 @@ import unittest
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
-
+from pymodbus.utilities import (
+    ModbusTransactionState,
+    checkCRC,
+    computeCRC,
+    hexlify_packets,
+)
 logger = logging.getLogger()
 
 # ---------------------------------------------------------------------------#
@@ -279,8 +284,11 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         slave_adr = int(data[0])
         func_code = int(data[1])
         byte_count = int(data[2])
-        crc = bytes(data[len(data)-3:len(data)-1])
-
+        size = len(data)
+        crc = data[size - 2 : size]
+        crc_val = (int(crc[0]) << 8) + int(crc[1])
+        is_valid = checkCRC(data[0:size-2], crc_val)
+        self.assertEqual(is_valid, True)
         # x = [b"\x12", b"\x34", b"\x56", b"\x78"] 
         # bytes(data[0:1]) ->  b'\x01'
         # bytes(data[1:2]) -> b'\x04'
