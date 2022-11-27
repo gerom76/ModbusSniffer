@@ -11,6 +11,7 @@ from pymodbus.utilities import (
 )
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
+from common.RepeatedTimer import RepeatedTimer
 #from pymodbus.utilities import hexlify_packets
 #from binascii import b2a_hex
 # from time import sleep
@@ -71,6 +72,11 @@ class SerialSnooper:
         lastError = self.lastError
         return readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError
 
+    def commit_lazy_statistics(self):
+        # if self.processedFramesCounter==0 or self.processedFramesCounter % 100 == 0:
+        readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError = self.get_statistics()
+        logger.warn(f"commit_lazy_statistics: {readingDate} {processedFramesCounter} {sniffingRate} {errorRate}")
+        update_statistics(readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError)
 ###################################################
 # https://github.com/eterey/pymodbus3/blob/master/examples/contrib/message-parser.py
 
@@ -133,17 +139,13 @@ class SerialSnooper:
         frame2Response =  bytearray()
         total_data: OrderedDict = OrderedDict()
         start_address = ''
-        
+        rt = RepeatedTimer(1, self.commit_lazy_statistics)
+        rt.start()
         while True:
             try:
-                self.processedFramesCounter += 1
-                if self.processedFramesCounter % 1000 == 0:
-                    readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError = self.get_statistics()
-                    update_statistics(readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError)
-                
                 message = self.read_in_waiting()
                 if len(message) <= 0: continue
-                
+                self.processedFramesCounter += 1
                 logger.debug(f"message[{len(message)}]: {message.hex()}")
                 
                 if len(message)==8:
@@ -170,10 +172,10 @@ class SerialSnooper:
                         total_data = data
                     elif start_address=='101e':
                         total_data.update(data)
+                    self.interceptedResponseFramesCounter += 1
                     
                     if len(start_address)>0 and len(total_data)>22:
                         logger.info(f'Ready to pass data: {total_data}')
-                        self.interceptedResponseFramesCounter = 0
                         update_smart_meter(total_data)
                         total_data = OrderedDict()
 
@@ -184,6 +186,7 @@ class SerialSnooper:
                 self.errorCounter += 1
                 self.lastError = e
                 pass
+        rt.stop()
 
     def process_optimized(self, request, response, slave_address):
         logger.info(f'Processing request={request.hex()} response={response.hex()}')
@@ -216,16 +219,14 @@ class SerialSnooper:
         read_size = 128
         self.reset_statistics()
         logger.warning(f"Starting method Generic: read_size:{read_size}")
+        rt = RepeatedTimer(1, self.commit_lazy_statistics)
+        rt.start()
         while True:
             try:
+                message = self.read_raw(read_size)
+                if len(message) <= 0: continue
                 self.processedFramesCounter += 1
-                
-                if self.processedFramesCounter % 1000 == 0:
-                    readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError = self.get_statistics()
-                    update_statistics(readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError)
-
-                data = self.read_raw(read_size)
-                self.process_generic(data, slave_address)
+                self.process_generic(message, slave_address)
                 # time.sleep(float(1)/ss.baud)
             except Exception as e:
                 logger.error(f'run_method_generic: error:{e}')
@@ -233,19 +234,19 @@ class SerialSnooper:
                 self.lastError = e
                 pass
     
-    def process_generic(self, data, slave_address):
-        logger.debug(f'generic process: data={data.hex()}')
-        if len(data) <= 0:
+    def process_generic(self, message, slave_address):
+        logger.debug(f'generic process: data={message.hex()}')
+        if len(message) <= 0:
             return
         # try:
         self.client_framer.processIncomingPacket(
-            data, self.slave_packet_callback, unit=slave_address, single=True)
+            message, self.slave_packet_callback, unit=slave_address, single=True)
         # except (IndexError, TypeError, KeyError) as e:
         #     logger.error(e)
         #     pass
         # try:
         self.server_framer.processIncomingPacket(
-            data, self.master_packet_callback, unit=slave_address, single=True)
+            message, self.master_packet_callback, unit=slave_address, single=True)
         # except (IndexError, TypeError, KeyError) as e:
         #     logger.error(e)
         #     pass
