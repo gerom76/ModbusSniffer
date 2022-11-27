@@ -81,6 +81,9 @@ class SerialSnooper:
         byte_count = (message[2])
         return slave_adr, func_code, byte_count
 
+    def print_registers(registers: list):
+        return ' '.join([str(i)+":"+hex(value) for i, value in enumerate(registers)])
+
     def extract_payload(data: bytearray, byte_count: int):
         payload = []
         for i in range(byte_count):

@@ -101,23 +101,18 @@ class Chint666TunedAdapter:
         dict = OrderedDict()
         # 101EH -> 4126
         dict["em_ImpEp"] = self.decoder.decode_32bit_float()
-
         # 1028H -> 4136
         self.decoder.skip_bytes(16)
         dict["em_ExpEp"] = self.decoder.decode_32bit_float()
-        
         # 1032H -> 4146
         self.decoder.skip_bytes(16)
         dict["em_Q1Eq"] = self.decoder.decode_32bit_float()
-        
         # 103CH -> 4156
         self.decoder.skip_bytes(16)
         dict["em_Q2Eq"] = self.decoder.decode_32bit_float()
-        
         # 1046H -> 4166
         self.decoder.skip_bytes(16)
         dict["em_Q3Eq"] = self.decoder.decode_32bit_float()
-        
         # 1050H -> 4176
         self.decoder.skip_bytes(16)
         dict["em_Q4Eq"] = self.decoder.decode_32bit_float()
