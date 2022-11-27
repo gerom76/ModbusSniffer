@@ -361,19 +361,20 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 19)
         # PFt
+        decoder.skip_bytes(16)
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 77)
+        self.assertEqual(value, -145)
         # PFa
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 25)
+        self.assertEqual(value, -440)
         # PFb
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 25)
+        self.assertEqual(value, 359)
         # PFc
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 25)
+        self.assertEqual(value, -367)
         # Freq
-        decoder.skip_bytes(52)
+        decoder.skip_bytes(36)
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 4998)
         
