@@ -12,6 +12,7 @@ import unittest
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
+from engine.chint666_adapter import Chint666TunedAdapter
 
 from engine.serial_snooper import SerialSnooper
 logger = logging.getLogger()
@@ -305,7 +306,9 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         payload = SerialSnooper.extract_payload(message, byte_count)
         decoder = SerialSnooper.load_decoder(payload)
         SerialSnooper.log_registry(message, byte_count, decoder)
-        
+        chint666Adaper = Chint666TunedAdapter(decoder)
+        data = chint666Adaper.decode_electricity()
+        print(data)
         # decoder.reset()
         # for i in range(int(byte_count/4)):
         #     print(f'{i}: {decoder.decode_32bit_float()},')
@@ -405,7 +408,9 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         payload = SerialSnooper.extract_payload(message, byte_count)
         decoder = SerialSnooper.load_decoder(payload)
         SerialSnooper.log_registry(message, byte_count, decoder)
-        
+        chint666Adaper = Chint666TunedAdapter(decoder)
+        data = chint666Adaper.decode_power()
+        print(data)
         # decoder.reset()
         # for i in range(int(byte_count/4)):
         #     print(f'{i}: {decoder.decode_32bit_float()},')

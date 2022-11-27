@@ -3,7 +3,7 @@ import serial
 from pymodbus.factory import ClientDecoder, ServerDecoder
 # from pymodbus.transaction import ModbusRtuFramer
 from api.web_app import update_sniffing_quality
-from engine.chint666_adapter import Chint666Adapter
+from engine.chint666_adapter import Chint666LegacyAdapter
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import (
     checkCRC,
@@ -30,19 +30,16 @@ class SerialSnooper:
         self.slave_address = slave_address
         self.serial = serial.Serial(port, baud, timeout=float(
             self.kByteLength*self.kMaxReadSize)/baud)
-        self.chint666Adapter = Chint666Adapter()
+        self.chint666LegacyAdapter = Chint666LegacyAdapter()
         self.client_framer = ModbusRtuFramer(decoder=ClientDecoder())
         self.server_framer = ModbusRtuFramer(decoder=ServerDecoder())
         
         self.frameBuffer1 =  bytearray()
-        # self.frameBuffer2 =  bytearray()
         self.isProcessingFrame1 = True
         self.frame1Request =  bytearray()
         self.frame2Request =  bytearray()
         self.frame1Response =  bytearray()
         self.frame2Response =  bytearray()
-        # self.request1Adresss = ''
-        # self.request2Adresss = ''
 
     def __enter__(self):
         return self
@@ -257,7 +254,7 @@ class SerialSnooper:
                 '.')[-1].strip("'><").replace("Response", "")
             arg += 1
             logger.info(f"Slave Response-> ID: {msg.unit_id}, arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code}")
-            self.chint666Adapter.process_meter_response(msg)
+            self.chint666LegacyAdapter.process_meter_response(msg)
 
 
     # def report(self, message):
@@ -411,7 +408,7 @@ class SerialSnooper:
                 '.')[-1].strip("'><").replace("Response", "")
             arg += 1
             logger.info(f"Slave Response-> ID: {msg.unit_id}, arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code}")
-            self.chint666Adapter.process_meter_response(msg)
+            self.chint666LegacyAdapter.process_meter_response(msg)
 
     def get_statistics(self):
         if (self.processedFramesCounter==0):
