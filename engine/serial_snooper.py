@@ -78,6 +78,12 @@ class SerialSnooper:
         quantity = (message[4:6]).hex()
         return slave_adr, func_code, start_address, quantity
 
+    def decode_response_message(message: bytearray):
+        slave_adr = int(message[0])
+        func_code = int(message[1])
+        byte_count = (message[2])
+        return slave_adr, func_code, byte_count
+
     def extract_payload(data: bytearray, byte_count: int):
         payload = []
         for i in range(byte_count):
