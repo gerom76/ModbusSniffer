@@ -270,13 +270,6 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
             ParameterException, lambda: BinaryPayloadDecoder.fromCoils("abcd")
         )
         
-    def convert_to_payload(self, data: bytearray, byte_count: int):
-        payload = []
-        for i in range(byte_count):
-            j = i
-            payload.append(bytes(data[i+3:i+4]))
-        return payload
-
     def test_payload_decoder_raw_request1(self):
         """Test the request 1 decoder functionality"""
         request1 = '0104200000527A37'
@@ -312,7 +305,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         # bytes(data[0:1]) ->  b'\x01'
         # bytes(data[1:2]) -> b'\x04'
         
-        payload = self.convert_to_payload(message, byte_count)
+        payload = SerialSnooper.extract_payload(message, byte_count)
         
         builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
         registers = builder.to_registers()
@@ -423,7 +416,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         is_valid = SerialSnooper.check_message(message)
         self.assertEqual(is_valid, True)
         
-        payload = self.convert_to_payload(message, byte_count)
+        payload = SerialSnooper.extract_payload(message, byte_count)
         
         builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
         registers = builder.to_registers()

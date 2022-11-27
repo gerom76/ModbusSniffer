@@ -69,6 +69,13 @@ class SerialSnooper:
         crc_val = (int(crc[0]) << 8) + int(crc[1])
         return checkCRC(message[0:size-2], crc_val)
 
+    def extract_payload(data: bytearray, byte_count: int):
+        payload = []
+        for i in range(byte_count):
+            j = i
+            payload.append(bytes(data[i+3:i+4]))
+        return payload
+
     def run_method_optimized(self, slave_address):
         logger.warning(f"Starting method Optimized")
         while True:
