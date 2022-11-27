@@ -155,7 +155,7 @@ class SerialSnooper:
                             is_valid = SerialSnooper.check_message(self.frame2Response)
                             if is_valid:
                                 slave_adr, func_code, byte_count = SerialSnooper.decode_response_message(self.frame2Response)
-                                logger.debug(f'Decoding response: func_code={func_code} byte_count={byte_count}')
+                                logger.debug(f'Decoding response: func_code={func_code} start_address=0x{start_address} quantity=0x{quantity} byte_count={byte_count}')
                                 payload = SerialSnooper.extract_payload(self.frame2Response, byte_count)
                                 decoder = SerialSnooper.load_decoder(payload)
                                 SerialSnooper.log_registry(self.frame2Response, byte_count, decoder)
@@ -164,7 +164,7 @@ class SerialSnooper:
                                     data = chint666Adaper.decode_electricity()
                                 elif start_address=='101e':
                                     data = chint666Adaper.decode_power()
-                                if data:
+                                if not data:
                                     logger.error(f'Data: {data}')
 
                     except Exception as ex:
