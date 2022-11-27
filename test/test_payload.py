@@ -306,16 +306,14 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         # bytes(data[1:2]) -> b'\x04'
         
         payload = SerialSnooper.extract_payload(message, byte_count)
-        decoder = SerialSnooper.prepare_decoder(payload)
-
-        for i in range(int(byte_count/4)-2):
-            entry = message[(i*4+3):(i*4+7)]
-            print(f'{i}: {bytes(entry)} {entry.hex()} {decoder.decode_32bit_float()}')
-        decoder.reset()
-        for i in range(int(byte_count/4)):
-            print(f'{i}: {decoder.decode_32bit_float()},')
-
-        decoder.reset()
+        decoder = SerialSnooper.load_decoder(payload)
+        SerialSnooper.log_registry(message, byte_count, decoder)
+        
+        # decoder.reset()
+        # for i in range(int(byte_count/4)):
+        #     print(f'{i}: {decoder.decode_32bit_float()},')
+        # decoder.reset()
+        
         # Uab
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 4163)
@@ -412,17 +410,14 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(is_valid, True)
         
         payload = SerialSnooper.extract_payload(message, byte_count)
-        decoder = SerialSnooper.prepare_decoder(payload)
-
-        for i in range(int(byte_count/4)):
-            entry = message[(i*4+3):(i*4+7)]
-            print(f'{i}: {bytes(entry)} {entry.hex()} {decoder.decode_32bit_float()}')
+        decoder = SerialSnooper.load_decoder(payload)
+        SerialSnooper.log_registry(message, byte_count, decoder)
         
-        decoder.reset()
-        for i in range(int(byte_count/4)):
-            print(f'{i}: {decoder.decode_32bit_float()},')
-            
-        decoder.reset()
+        # decoder.reset()
+        # for i in range(int(byte_count/4)):
+        #     print(f'{i}: {decoder.decode_32bit_float()},')
+        # decoder.reset()
+        
         #ImpEp
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 13.09000015258789)

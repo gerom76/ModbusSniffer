@@ -77,13 +77,21 @@ class SerialSnooper:
             payload.append(bytes(data[i+3:i+4]))
         return payload
     
-    def prepare_decoder(payload: list):
+    def load_decoder(payload: list):
         builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
         registers = builder.to_registers()
         # logger.debug(registers)
         # print(registers)
         decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
         return decoder
+
+    def log_registry(message: bytearray, byte_count: int, decoder: BinaryPayloadDecoder):
+        logger.debug(f'Registry for message hex: {message.hex()} byte_count: {byte_count}')
+        decoder.reset()
+        for i in range(int(byte_count/4)):
+            entry = message[(i*4+3):(i*4+7)]
+            logger.debug(f'{i}: {bytes(entry)} hex: {entry.hex()} value: {decoder.decode_32bit_float()}')
+        decoder.reset()
 
     def run_method_optimized(self, slave_address):
         logger.warning(f"Starting method Optimized")
