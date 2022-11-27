@@ -1,7 +1,8 @@
-from collections import Counter, OrderedDict
+from collections import OrderedDict
 from datetime import datetime
 import logging
 import serial
+import time
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from api.web_app import update_smart_meter, update_statistics
 from engine.chint666_adapter import Chint666LegacyAdapter, Chint666TunedAdapter
@@ -175,7 +176,8 @@ class SerialSnooper:
                     self.interceptedResponseFramesCounter += 1
                     
                     if len(start_address)>0 and len(total_data)>22:
-                        logger.info(f'Ready to pass data: {total_data}')
+                        logger.warn(f'Ready to pass data: {total_data}')
+                        time.sleep(float(1)/self.baud)
                         update_smart_meter(total_data)
                         total_data = OrderedDict()
 
@@ -233,23 +235,16 @@ class SerialSnooper:
                 self.errorCounter += 1
                 self.lastError = e
                 pass
+        rt.stop()
     
     def process_generic(self, message, slave_address):
         logger.debug(f'generic process: data={message.hex()}')
         if len(message) <= 0:
             return
-        # try:
         self.client_framer.processIncomingPacket(
             message, self.slave_packet_callback, unit=slave_address, single=True)
-        # except (IndexError, TypeError, KeyError) as e:
-        #     logger.error(e)
-        #     pass
-        # try:
         self.server_framer.processIncomingPacket(
             message, self.master_packet_callback, unit=slave_address, single=True)
-        # except (IndexError, TypeError, KeyError) as e:
-        #     logger.error(e)
-        #     pass
 
     def master_packet_callback(self, *args, **kwargs):
         # logger.debug(f"responseBuffer: {self.responseBuffer.hex()}")
