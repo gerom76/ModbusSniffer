@@ -3,7 +3,7 @@ import serial
 from pymodbus.factory import ClientDecoder, ServerDecoder
 # from pymodbus.transaction import ModbusRtuFramer
 from api.web_app import update_sniffing_quality
-from engine.chint666_adapter import Chint666LegacyAdapter
+from engine.chint666_adapter import Chint666LegacyAdapter, Chint666TunedAdapter
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import (
     checkCRC,
@@ -112,115 +112,98 @@ class SerialSnooper:
     def run_method_optimized(self, slave_address):
         logger.warning(f"Starting method Optimized")
         while True:
-            message = self.read_in_waiting()
-            if len(message) > 0:
-                logger.debug(f"message[{len(message)}]: {message.hex()}")
+            response = self.read_in_waiting()
+            if len(response) <= 0: continue
+            
+            logger.debug(f"message[{len(response)}]: {response.hex()}")
+            
+            message = response # bytearray.fromhex(response)
+            print(message)
+            
+            if len(message)==8:
+                logger.info(f"request (current): {message.hex()}")
                 
-                if len(message)==8:
-                    logger.info(f"request (current): {message.hex()}")
-                    # self.client_framer.addToFrame(message)
-                    # data = self.client_framer.getRawFrame() # if error else self.getFrame()
-                    # logger.info(f"request (current): data {data}")
-                    # result = self.client_framer.decoder.decode(data)
-                    # logger.info(f"request (current): result {result}")
-                    # self.client_framer.resetFrame()
-                    
-                    self.server_framer.addToFrame(message)
-                    data = self.server_framer.getRawFrame() # if error else self.getFrame()
-                    logger.info(f"request (current): data {data}")
-                    result = self.server_framer.decoder.decode(data)
-                    logger.info(f"request (current): result {result}")
-                    self.server_framer.resetFrame()
-                    
-                    
-                    # if self.client_framer.checkFrame():
-                    #     data = self.client_framer.getRawFrame() # if error else self.getFrame()
-                    #     logger.info(f"request (current): data {data}")
-                    #     result = self.client_framer.decoder.decode(data)
-                    #     logger.info(f"request (current): result {result}")
-                    #     self.client_framer.populateResult(result)
-                    #     self.client_framer.advanceFrame()
-                    # else:
-                    #     logger.warning(f"invalid client message: {message.hex()}")
-                    #     self.client_framer.resetFrame()
-                        
-                    # self.server_framer.addToFrame(message)
-                    # if self.server_framer.checkFrame():
-                    #     data = self.server_framer.getRawFrame() # if error else self.getFrame()
-                    #     logger.info(f"request (current): data {data}")
-                    #     result = self.server_framer.decoder.decode(data)
-                    #     logger.info(f"request (current): result {result}")
-                    #     self.server_framer.populateResult(result)
-                    #     self.server_framer.advanceFrame()
-                    # else:
-                    #     logger.warning(f"invalid server message: {message.hex()}")
-                    #     self.server_framer.resetFrame()
-                        
-                        
-                        
-                    # if self.client_framer.checkFrame():
-                        # self.client_framer.advanceFrame()
-                    #self.client_framer.processIncomingPacket(message, self.master_packet_callback2, unit=slave_address, single=True)
-                    
-                    logger.info(f"response (previous): {self.frameBuffer1.hex()}")
-                    # self.server_framer.addToFrame(self.frameBuffer1)
-                    # if self.server_framer.checkFrame():
-                        # self.server_framer.advanceFrame()
-                    #self.server_framer.processIncomingPacket(self.frameBuffer1, self.slave_packet_callback2, unit=slave_address, single=True)
-                    
-                    if self.isProcessingFrame1:
-                        self.frame1Request = message
-                        self.frame2Response = self.frameBuffer1
-                        self.isProcessingFrame1 = False
-                    else:
-                        self.frame2Request = message
-                        self.frame1Response = self.frameBuffer1
-                        self.isProcessingFrame1 = True
-                        
-                    logger.info(f"F1 {self.frame1Request.hex()} {self.frame1Response.hex()}")
-                    logger.info(f"F2 {self.frame2Request.hex()} {self.frame2Response.hex()}")
-                    
-                    self.frameBuffer1 = bytearray()
+                # self.server_framer.addToFrame(message)
+                # data = self.server_framer.getRawFrame() # if error else self.getFrame()
+                # logger.info(f"request (current): data {data}")
+                # result = self.server_framer.decoder.decode(data)
+                # logger.info(f"request (current): result {result}")
+                # self.server_framer.resetFrame()
+                                    
+                # logger.info(f"response (previous): {self.frameBuffer1.hex()}")
+                
+                if self.isProcessingFrame1:
+                    self.frame1Request = message
+                    self.frame2Response = self.frameBuffer1
+                    self.isProcessingFrame1 = False
                 else:
-                    self.frameBuffer1 += message
+                    self.frame2Request = message
+                    self.frame1Response = self.frameBuffer1
+                    self.isProcessingFrame1 = True
                     
-                # self.process_optimized(message, slave_address)
-            # self.frameBuffer1 = self.read_in_waiting()
-            # logger.debug(f"frameBuffer1: {self.frameBuffer1.hex()}")
-            # self.process_generic(self.frameBuffer1, slave_address)
-            # self.frameBuffer2 = self.read_in_waiting()
-            # logger.debug(f"frameBuffer2: {self.frameBuffer2.hex()}")
-            # self.process_generic(self.frameBuffer2, slave_address)
+                logger.info(f"F1 {self.frame1Request.hex()} {self.frame1Response.hex()}")
+                logger.info(f"F2 {self.frame2Request.hex()} {self.frame2Response.hex()}")
+                
+                if not self.isProcessingFrame1 and len(self.frame2Request)>0 and len(self.frame2Response)>0:
+                    try:
+                        is_valid = SerialSnooper.check_message(self.frame2Request)
+                        if is_valid:
+                            slave_adr, func_code, start_address, quantity = SerialSnooper.decode_request_message(self.frame2Request)
+                            
+                            if slave_adr != slave_address: continue
+                            
+                            is_valid = SerialSnooper.check_message(self.frame2Response)
+                            if is_valid:
+                                slave_adr, func_code, byte_count = SerialSnooper.decode_response_message(self.frame2Response)
+                                logger.debug(f'Decoding response: func_code={func_code} byte_count={byte_count}')
+                                payload = SerialSnooper.extract_payload(self.frame2Response, byte_count)
+                                decoder = SerialSnooper.load_decoder(payload)
+                                SerialSnooper.log_registry(self.frame2Response, byte_count, decoder)
+                                chint666Adaper = Chint666TunedAdapter(decoder)
+                                if start_address=='2000':
+                                    data = chint666Adaper.decode_electricity()
+                                elif start_address=='101e':
+                                    data = chint666Adaper.decode_power()
+                                if data:
+                                    logger.error(f'Data: {data}')
 
-    def process_optimized(self, message, slave_address):
-        logger.debug(f'optimized process: message={message.hex()}')
+                    except Exception as ex:
+                        logger.error(f'Processing Frame 2: exception={ex} Request={self.frame2Request} Response={self.frame2Response}')
+                        pass
+                self.frameBuffer1 = bytearray()
+            else:
+                self.frameBuffer1 += message
 
-        self.processedFramesCounter += 1
 
-        try:
-            self.client_framer.addToFrame(message)
-            if self.client_framer.checkFrame():
-                self.client_framer.advanceFrame()
-                self.client_framer.processIncomingPacket(message, self.master_packet_callback2, unit=slave_address)
-            else: self.check_errors(self.server_framer, message)
-        except Exception as ex: 
-            self.check_errors(self.server_framer, message)
+    # def process_optimized(self, message, slave_address):
+    #     logger.debug(f'optimized process: message={message.hex()}')
+
+    #     self.processedFramesCounter += 1
+
+    #     try:
+    #         self.client_framer.addToFrame(message)
+    #         if self.client_framer.checkFrame():
+    #             self.client_framer.advanceFrame()
+    #             self.client_framer.processIncomingPacket(message, self.master_packet_callback2, unit=slave_address)
+    #         else: self.check_errors(self.server_framer, message)
+    #     except Exception as ex: 
+    #         self.check_errors(self.server_framer, message)
     
-        try:
-            self.server_framer.addToFrame(message)
-            if self.server_framer.checkFrame():
-                self.server_framer.advanceFrame()
-                self.server_framer.processIncomingPacket(message, self.slave_packet_callback2, unit=slave_address)
-            else: self.check_errors(self.server_framer, message)
-        except Exception as ex: 
-            self.check_errors(self.server_framer, message)
+    #     try:
+    #         self.server_framer.addToFrame(message)
+    #         if self.server_framer.checkFrame():
+    #             self.server_framer.advanceFrame()
+    #             self.server_framer.processIncomingPacket(message, self.slave_packet_callback2, unit=slave_address)
+    #         else: self.check_errors(self.server_framer, message)
+    #     except Exception as ex: 
+    #         self.check_errors(self.server_framer, message)
 
-    def check_errors(self, decoder, message):
-        ''' Attempt to find message errors
-        :param message: The message to find errors in
-        '''
-        logger.debug(f'Check_errors: message={message.hex()}')
-        pass
+    # def check_errors(self, decoder, message):
+    #     ''' Attempt to find message errors
+    #     :param message: The message to find errors in
+    #     '''
+    #     logger.debug(f'Check_errors: message={message.hex()}')
+    #     pass
 
     def master_packet_callback2(self, *args, **kwargs):
         # logger.debug(f"responseBuffer: {self.responseBuffer.hex()}")

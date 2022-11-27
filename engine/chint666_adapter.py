@@ -21,7 +21,9 @@ class Chint666TunedAdapter:
 
     def process_meter_response(self, msg):
         try:
-            data = ' '.join([str(i)+":"+hex(value) for i, value in enumerate(msg.registers)])
+            # message = bytearray.fromhex(response)
+            # print(message)
+            # slave_adr, func_code, byte_count = SerialSnooper.decode_response_message(message)
             count = len(msg.registers)
             logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
             if count == 60:
