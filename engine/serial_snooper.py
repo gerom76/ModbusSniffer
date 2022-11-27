@@ -2,7 +2,7 @@ from collections import Counter, OrderedDict
 import logging
 import serial
 from pymodbus.factory import ClientDecoder, ServerDecoder
-from api.web_app import update_sniffing_quality
+from api.web_app import update_smart_meter, update_sniffing_quality
 from engine.chint666_adapter import Chint666LegacyAdapter, Chint666TunedAdapter
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import (
@@ -144,6 +144,8 @@ class SerialSnooper:
                 
                 if len(start_address)>0 and len(total_data)>22:
                     logger.info(f'Ready to pass data: {total_data}')
+                    # TODO: Update data and statisticsy here every two seconds!
+                    update_smart_meter(total_data)
                     total_data = OrderedDict()
 
             else:

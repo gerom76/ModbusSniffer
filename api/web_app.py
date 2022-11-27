@@ -87,14 +87,31 @@ def setup_webapp_api(inmemory: bool):
     logger.info("setup_webapp_api finished")
 
 def update_app_info_started(started):
-    with app.app_context():
-        inf = db.session.execute(
-            db.select(Info).filter_by(app_name=APPNAME)).one()
-        inf[0].app_started = started
-        db.session.commit()
+    try:
+        with app.app_context():
+            inf = db.session.execute(
+                db.select(Info).filter_by(app_name=APPNAME)).one()
+            inf[0].app_started = started
+            db.session.commit()
+    except Exception as e:
+        logger.error(f'update_app_info_started: error:{e} for date:{started}')
+        pass
 
 #sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) cannot commit - no transaction is active
 #(Background on this error at: https://sqlalche.me/e/14/e3q8)
+
+def update_smart_meter(dictData):
+    try:
+        with app.app_context():
+            sm = db.session.execute(
+                db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
+            entry = sm[0]
+            for name, value in iter(dictData.items()):
+                setattr(entry, name, value)
+            db.session.commit()
+    except Exception as e:
+        logger.error(f'update_smart_meter: error:{e} for data:{dictData}')
+        pass
 
 def update_statistics(queries_amount):
     try:
@@ -119,22 +136,15 @@ def update_sniffing_quality(value):
         logger.error(f'update_sniffing_quality: error:{e}')
         pass
 
-
-def update_electricity(dictData):
-    with app.app_context():
-        sm = db.session.execute(
-            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
-        entry = sm[0]
-        for name, value in iter(dictData.items()):
-            setattr(entry, name, value)
-        db.session.commit()
-
-
-def update_power(dictData):
-    with app.app_context():
-        sm = db.session.execute(
-            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
-        entry = sm[0]
-        for name, value in iter(dictData.items()):
-            setattr(entry, name, value)
-        db.session.commit()
+def update_smart_meter_legacy(dictData):
+    try:
+        with app.app_context():
+            sm = db.session.execute(
+                db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
+            entry = sm[0]
+            for name, value in iter(dictData.items()):
+                setattr(entry, name, value)
+            db.session.commit()
+    except Exception as e:
+        logger.error(f'update_smart_meter_legacy: error:{e} for data:{dictData}')
+        pass

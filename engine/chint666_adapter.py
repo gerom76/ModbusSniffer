@@ -3,7 +3,7 @@ from collections import OrderedDict
 from pymodbus.payload import BinaryPayloadDecoder
 from pymodbus.constants import Endian
 
-from api.web_app import update_electricity, update_power, update_statistics
+from api.web_app import update_smart_meter_legacy, update_statistics
 
 logger = logging.getLogger()
 
@@ -97,13 +97,13 @@ class Chint666LegacyAdapter:
             if count == 60:
                 logger.debug(f'Power data')
                 power_data = self.decode_power(msg.registers)
-                update_power(power_data)
+                update_smart_meter_legacy(power_data)
             elif count == 82:
                 logger.debug(f'Electricity data')
                 electricity_data = self.decode_electricity(msg.registers)
                 # for name, value in iter(electricity_data.items()):
                 #     logger.info(f'{name} = {value}')
-                update_electricity(electricity_data)
+                update_smart_meter_legacy(electricity_data)
             else:
                 logger.debug(f'Unknown address')
             self.queryCounter += 1
