@@ -12,9 +12,9 @@ import unittest
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
-from engine.chint666_adapter import Chint666TunedAdapter
+from engine.Chint666Adapter import Chint666TunedAdapter
 
-from engine.serial_snooper import SerialSnooper
+from engine.SerialSnooper import SerialSnooper
 logger = logging.getLogger()
 
 # ---------------------------------------------------------------------------#

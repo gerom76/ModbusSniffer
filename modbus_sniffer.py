@@ -7,7 +7,7 @@ from common.smartLogger import setup_logger
 setup_logger(__package__)
 
 from api.web_app import get_app, setup_webapp_api
-from engine.serial_snooper import SerialSnooper
+from engine.SerialSnooper import SerialSnooper
 
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)

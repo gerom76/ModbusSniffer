@@ -19,8 +19,8 @@ DTSU666 = 'DTSU666'
 def get_db():
     return db
 
-from api.info import Info, InfoSchema
-from api.smart_meter import SmartMeter, SmartMeterSchema
+from api.Info import Info, InfoSchema
+from api.SmartMeter import SmartMeter, SmartMeterSchema
 
 class InfosMany(ResourceList):
     schema = InfoSchema

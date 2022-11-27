@@ -5,7 +5,7 @@ import serial
 import time
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from api.web_app import update_smart_meter, update_statistics
-from engine.chint666_adapter import Chint666LegacyAdapter, Chint666TunedAdapter
+from engine.Chint666Adapter import Chint666LegacyAdapter, Chint666TunedAdapter
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import (
     checkCRC,
