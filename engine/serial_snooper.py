@@ -108,7 +108,7 @@ class SerialSnooper:
 
     # Optimized flow for string of interlaced request and responses:
     def run_method_optimized(self, slave_address):
-        logger.warning(f"Starting method Optimized")
+        logger.warning(f"Starting Optimized Method")
         while True:
             message = self.read_in_waiting()
             if len(message) <= 0: continue
@@ -139,7 +139,7 @@ class SerialSnooper:
                 self.frameBuffer += message
 
     def process_optimized(self, request, response, slave_address):
-        logger.info(f'Processing optimized: request={request.hex()} response={response.hex()}')
+        logger.info(f'Processing request={request.hex()} response={response.hex()}')
         try:
             is_valid = SerialSnooper.check_message(request)
             if is_valid:
