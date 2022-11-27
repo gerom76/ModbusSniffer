@@ -90,29 +90,17 @@ class Chint666LegacyAdapter:
         self.close()
 
     def process_meter_response(self, msg):
-        try:
-            data = ' '.join([str(i)+":"+hex(value) for i, value in enumerate(msg.registers)])
-            count = len(msg.registers)
-            logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
-            if count == 60:
-                logger.debug(f'Power data')
-                power_data = self.decode_power(msg.registers)
-                update_smart_meter_legacy(power_data)
-            elif count == 82:
-                logger.debug(f'Electricity data')
-                electricity_data = self.decode_electricity(msg.registers)
-                # for name, value in iter(electricity_data.items()):
-                #     logger.info(f'{name} = {value}')
-                update_smart_meter_legacy(electricity_data)
-            else:
-                logger.debug(f'Unknown address')
-            self.queryCounter += 1
-            update_statistics(self.queryCounter)
-        except Exception as err:
-            logger.error(f'Error processing msg: {msg}: {err}')
-            pass
-        finally:
-            logger.debug(f'Finished processing msg: {msg}')
+        data = ' '.join([str(i)+":"+hex(value) for i, value in enumerate(msg.registers)])
+        count = len(msg.registers)
+        logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
+        if count == 60:
+            power_data = self.decode_power(msg.registers)
+            update_smart_meter_legacy(power_data)
+        elif count == 82:
+            electricity_data = self.decode_electricity(msg.registers)
+            update_smart_meter_legacy(electricity_data)
+        else:
+            logger.warning(f'Unknown count {count}')
 
     def log_decode_32bit_float(self, decoder: BinaryPayloadDecoder, count):
         decoder.reset()
