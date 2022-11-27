@@ -93,7 +93,7 @@ class SerialSnooper:
     def load_decoder(payload: list):
         builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
         registers = builder.to_registers()
-        # logger.debug(registers)
+        logger.debug(f'load_decoder-registers: {registers}')
         # print(registers)
         decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
         return decoder
