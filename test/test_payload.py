@@ -282,11 +282,31 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
             payload.append(bytes(data[i+3:i+4]))
         return payload
 
+    def test_payload_decoder_raw_request1(self):
+        """Test the request 1 decoder functionality"""
+        request1 = '0104200000527A37'
+        print(request1)
+        data = bytearray.fromhex(request1)
+        print(data)
+        slave_adr = int(data[0])
+        self.assertEqual(slave_adr, 1)
+        func_code = int(data[1])
+        self.assertEqual(func_code, 4)
+        start_address = (data[2:4]).hex()
+        self.assertEqual(start_address, '2000')
+        quantity = (data[4:6]).hex()
+        self.assertEqual(quantity, '0052')
+        size = len(data)
+        crc = data[size - 2 : size]
+        crc_val = (int(crc[0]) << 8) + int(crc[1])
+        is_valid = checkCRC(data[0:size-2], crc_val)
+        self.assertEqual(is_valid, True)
+
     def test_payload_decoder_raw_response1(self):
-        """Test the payload decoder functionality"""
-        resp1 = '0104A4458218004582180045821800451640004516400045164000415000004130000041400000C1300000C130000041100000C110000041A8000041900000C180000041980000429A000041C8000041C8000041C80000C3110000C3DC000043B38000C3B780004493C0004539D000448D0000000000000000000000000000000000000000000000000000459C30004110000047693B00000000000000000000000000000000002CF7'
-        print(resp1)
-        data = bytearray.fromhex(resp1)
+        """Test the response 1 decoder functionality"""
+        response = '0104A4458218004582180045821800451640004516400045164000415000004130000041400000C1300000C130000041100000C110000041A8000041900000C180000041980000429A000041C8000041C8000041C80000C3110000C3DC000043B38000C3B780004493C0004539D000448D0000000000000000000000000000000000000000000000000000459C30004110000047693B00000000000000000000000000000000002CF7'
+        print(response)
+        data = bytearray.fromhex(response)
         print(data)
         slave_adr = int(data[0])
         self.assertEqual(slave_adr, 1)
@@ -381,11 +401,32 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         decoder.skip_bytes(52)
         value = decoder.decode_32bit_float()
         self.assertEqual(value, 4998)
+        
+    def test_payload_decoder_raw_request2(self):
+        """Test the request 2 decoder functionality"""
+        request = '0104101E003C94DD'
+        print(request)
+        data = bytearray.fromhex(request)
+        print(data)
+        slave_adr = int(data[0])
+        self.assertEqual(slave_adr, 1)
+        func_code = int(data[1])
+        self.assertEqual(func_code, 4)
+        start_address = (data[2:4]).hex()
+        self.assertEqual(start_address, '101e')
+        quantity = (data[4:6]).hex()
+        self.assertEqual(quantity, '003c')
+        size = len(data)
+        crc = data[size - 2 : size]
+        crc_val = (int(crc[0]) << 8) + int(crc[1])
+        is_valid = checkCRC(data[0:size-2], crc_val)
+        self.assertEqual(is_valid, True)
+        
     def test_payload_decoder_raw_response2(self):
-        """Test the payload decoder functionality"""
-        resp1 = '010478415170A4415170A400000000000000000000000041251EB841251EB8000000000000000000000000400AE148400AE148000000000000000000000000422B51EC422B51EC0000000000000000000000003F3333333F3333330000000000000000000000003F0F5C293F0F5C290000000000000000000000004FF2'
-        print(resp1)
-        data = bytearray.fromhex(resp1)
+        """Test the response 2 decoder functionality"""
+        response = '010478415170A4415170A400000000000000000000000041251EB841251EB8000000000000000000000000400AE148400AE148000000000000000000000000422B51EC422B51EC0000000000000000000000003F3333333F3333330000000000000000000000003F0F5C293F0F5C290000000000000000000000004FF2'
+        print(response)
+        data = bytearray.fromhex(response)
         print(data)
         slave_adr = int(data[0])
         self.assertEqual(slave_adr, 1)
