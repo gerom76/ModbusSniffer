@@ -316,54 +316,54 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         
         # Uab
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 4163)
+        self.assertEqual(data['em_Uab'], 416.3)
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 4163)
+        self.assertEqual(data['em_Ubc'], 416.3)
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 4163)
+        self.assertEqual(data['em_Uca'], 416.3)
         # Ua
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 2404)
+        self.assertEqual(data['em_Ua'], 240.4)
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 2404)
+        self.assertEqual(data['em_Ub'], 240.4)
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 2404)
+        self.assertEqual(data['em_Uc'], 240.4)
         # Ia
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 13)
+        self.assertEqual(data['em_Ia'], 0.013000000000000001)
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 11)
+        self.assertEqual(data['em_Ib'], 0.011)
         # Ic
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 12)
+        self.assertEqual(data['em_Ic'], 0.012)
         # Pt
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, -11)
+        self.assertEqual(data['em_Pt'], -1.1)
         # Pa
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, -11)
+        self.assertEqual(data['em_Pa'], -1.1)
         # Pb
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 9)
+        self.assertEqual(data['em_Pb'], 0.9)
         # Pc
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, -9)
+        self.assertEqual(data['em_Pc'], -0.9)
         # Qt
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 21)
+        self.assertEqual(data['em_Qt'], 2.1)
         # Qa
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 18)
+        self.assertEqual(data['em_Qa'], 1.8)
         # Qb
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, -16)
+        self.assertEqual(data['em_Qb'], -1.6)
         # Qc
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, 19)
+        self.assertEqual(data['em_Qc'], 1.9000000000000001)
         # PFt
         decoder.skip_bytes(16)
         value = decoder.decode_32bit_float()
-        self.assertEqual(value, -145)
+        self.assertEqual(data['em_PFt'], -0.145)
         # PFa
         value = decoder.decode_32bit_float()
         self.assertEqual(value, -440)

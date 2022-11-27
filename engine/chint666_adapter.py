@@ -91,7 +91,7 @@ class Chint666TunedAdapter:
 
         # 2044H -> 8260
         self.decoder.skip_bytes(36)
-        dict["em_Freq"] = self.decoder.decode_32bit_float()*0.01   # decoder.decode_32bit_float()*0.01
+        dict["em_Freq"] = self.decoder.decode_32bit_float()*0.01
         self.decoder.reset()
         return dict
 
