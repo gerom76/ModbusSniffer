@@ -9,7 +9,7 @@ from api.web_app import get_db
 class SmartMeter(get_db().Model):
     # __tablename__ = "smart_meter"
     id = Column(Integer, primary_key=True)
-    sniffing_quality = Column(String)
+    em_SniffingRate = Column(String)
     em_Type = Column(String)
     em_Status = Column(String)
     em_RdTime = Column(String)
@@ -58,7 +58,7 @@ class SmartMeterSchema(Schema):
         self_view_many = 'smartmeter_many'
 
     id = fields.Integer()
-    sniffing_quality = fields.Str(required=True)
+    em_SniffingRate = fields.Str(required=True)
     em_Type = fields.Str(required=True)
     em_Status = fields.Str(required=True)
     em_RdTime = fields.Str(required=False)

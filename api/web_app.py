@@ -50,7 +50,7 @@ def setup_database(started):
         info1 = Info(app_name=APPNAME, app_ver=APPVER, app_started=started)
         db.session.add(info1)
 
-        sm1 = SmartMeter(em_Type=DTSU666, em_Status='OK', sniffing_quality='0')
+        sm1 = SmartMeter(em_Type=DTSU666, em_Status='OK', em_SniffingRate='0')
         db.session.add(sm1)
         db.session.commit()
 def init_file_database(started):
@@ -118,7 +118,7 @@ def update_statistics(readingDate, errorCounter, processedFramesCounter, errorRa
         entry.em_Queries = processedFramesCounter
         entry.em_RdTime = readingDate
         entry.em_TotErr = errorCounter
-        entry.sniffing_quality = sniffingRate
+        entry.em_SniffingRate = sniffingRate
         db.session.commit()
 
 def update_smart_meter_legacy(dictData):
