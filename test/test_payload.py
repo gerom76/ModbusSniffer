@@ -393,23 +393,12 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         # decoder.reset()
         
         #ImpEp
-        value = decoder.decode_32bit_float()
-        self.assertEqual(value, 13.09000015258789)
+        self.assertEqual(data['em_ImpEp'], 13.09000015258789)
         #ExpEp
-        decoder.skip_bytes(16)
-        value = decoder.decode_32bit_float()
-        self.assertEqual(value, 10.319999694824219)
+        self.assertEqual(data['em_ExpEp'], 10.319999694824219)
         #Q1Eq
-        decoder.skip_bytes(16)
-        value = decoder.decode_32bit_float()
-        self.assertEqual(value, 2.1700000762939453)
-        decoder.skip_bytes(16)
-        value = decoder.decode_32bit_float()
-        self.assertEqual(value, 42.83000183105469)
-        decoder.skip_bytes(16)
-        value = decoder.decode_32bit_float()
-        self.assertEqual(value, 0.699999988079071)
+        self.assertEqual(data['em_Q1Eq'], 2.1700000762939453)
+        self.assertEqual(data['em_Q2Eq'], 42.83000183105469)
+        self.assertEqual(data['em_Q3Eq'], 0.699999988079071)
         #Q4Eq
-        decoder.skip_bytes(16)
-        value = decoder.decode_32bit_float()
-        self.assertEqual(value, 0.5600000023841858)
+        self.assertEqual(data['em_Q4Eq'], 0.5600000023841858)
