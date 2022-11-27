@@ -95,6 +95,9 @@ class SerialSnooper:
         registers = builder.to_registers()
         logger.debug(f'load_decoder-registers: {registers}')
         # print(registers)
+        return SerialSnooper.prepare_decoder(registers)
+
+    def prepare_decoder(registers: list):
         decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
         return decoder
 
