@@ -306,12 +306,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         # bytes(data[1:2]) -> b'\x04'
         
         payload = SerialSnooper.extract_payload(message, byte_count)
-        
-        builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
-        registers = builder.to_registers()
-        logger.debug(registers)
-        print(registers)
-        decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
+        decoder = SerialSnooper.prepare_decoder(payload)
 
         for i in range(int(byte_count/4)-2):
             entry = message[(i*4+3):(i*4+7)]
@@ -417,12 +412,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         self.assertEqual(is_valid, True)
         
         payload = SerialSnooper.extract_payload(message, byte_count)
-        
-        builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
-        registers = builder.to_registers()
-        logger.debug(registers)
-        print(registers)
-        decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
+        decoder = SerialSnooper.prepare_decoder(payload)
 
         for i in range(int(byte_count/4)):
             entry = message[(i*4+3):(i*4+7)]

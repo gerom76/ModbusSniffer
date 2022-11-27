@@ -8,6 +8,8 @@ from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import (
     checkCRC,
 )
+from pymodbus.constants import Endian
+from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
 #import pymodbus
 #from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets
@@ -72,9 +74,16 @@ class SerialSnooper:
     def extract_payload(data: bytearray, byte_count: int):
         payload = []
         for i in range(byte_count):
-            j = i
             payload.append(bytes(data[i+3:i+4]))
         return payload
+    
+    def prepare_decoder(payload: list):
+        builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
+        registers = builder.to_registers()
+        # logger.debug(registers)
+        # print(registers)
+        decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
+        return decoder
 
     def run_method_optimized(self, slave_address):
         logger.warning(f"Starting method Optimized")
