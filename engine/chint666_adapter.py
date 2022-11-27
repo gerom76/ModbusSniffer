@@ -19,47 +19,6 @@ class Chint666TunedAdapter:
     def __init__(self, decoder):
         self.decoder = decoder
 
-    def process_meter_response(self, msg):
-        try:
-            # message = bytearray.fromhex(response)
-            # print(message)
-            # slave_adr, func_code, byte_count = SerialSnooper.decode_response_message(message)
-            count = len(msg.registers)
-            logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
-            if count == 60:
-                logger.debug(f'Power data')
-                power_data = self.decode_power(msg.registers)
-                update_power(power_data)
-            elif count == 82:
-                logger.debug(f'Electricity data')
-                electricity_data = self.decode_electricity(msg.registers)
-                # for name, value in iter(electricity_data.items()):
-                #     logger.info(f'{name} = {value}')
-                update_electricity(electricity_data)
-            else:
-                logger.debug(f'Unknown address')
-            self.queryCounter += 1
-            update_statistics(self.queryCounter)
-        except Exception as err:
-            logger.error(f'Error processing msg: {msg}: {err}')
-            pass
-        finally:
-            logger.debug(f'Finished processing msg: {msg}')
-
-    def log_decode_32bit_float(self, decoder: BinaryPayloadDecoder, count):
-        decoder.reset()
-        for i in range(count):
-            logger.debug(f'{i}: {decoder.decode_32bit_float()},')
-        decoder.reset()
-
-    def decode_range_32bit_float(self, decoder: BinaryPayloadDecoder, count):
-        decoder.reset()
-        data=[]
-        for i in range(count):
-            data.append(decoder.decode_32bit_float())
-        decoder.reset()
-        return data
-
     def decode_electricity(self):
         self.decoder.reset()
         dict = OrderedDict(
