@@ -32,13 +32,6 @@ class SerialSnooper:
         self.client_framer = ModbusRtuFramer(decoder=ClientDecoder())
         self.server_framer = ModbusRtuFramer(decoder=ServerDecoder())
         
-        self.frameBuffer =  bytearray()
-        self.isProcessingFrame1 = True
-        self.frame1Request =  bytearray()
-        self.frame2Request =  bytearray()
-        self.frame1Response =  bytearray()
-        self.frame2Response =  bytearray()
-
     def __enter__(self):
         return self
 
@@ -110,6 +103,12 @@ class SerialSnooper:
     # Optimized flow for string of interlaced request and responses:
     def run_method_optimized(self, slave_address):
         logger.warning(f"Starting Optimized Method")
+        frameBuffer =  bytearray()
+        isProcessingFrame1 = True
+        frame1Request =  bytearray()
+        frame2Request =  bytearray()
+        frame1Response =  bytearray()
+        frame2Response =  bytearray()
         total_data: OrderedDict = OrderedDict()
         start_address = ''
         while True:
@@ -120,23 +119,23 @@ class SerialSnooper:
             
             if len(message)==8:
                 logger.debug(f"request (current): {message.hex()}")
-                if self.isProcessingFrame1:
-                    self.frame1Request = message
-                    self.frame2Response = self.frameBuffer
-                    self.isProcessingFrame1 = False
+                if isProcessingFrame1:
+                    frame1Request = message
+                    frame2Response = frameBuffer
+                    isProcessingFrame1 = False
                 else:
-                    self.frame2Request = message
-                    self.frame1Response = self.frameBuffer
-                    self.isProcessingFrame1 = True
-                self.frameBuffer = bytearray()
+                    frame2Request = message
+                    frame1Response = frameBuffer
+                    isProcessingFrame1 = True
+                frameBuffer = bytearray()
                                     
-                # logger.info(f"F1 {self.frame1Request.hex()} {self.frame1Response.hex()}")
-                # logger.info(f"F2 {self.frame2Request.hex()} {self.frame2Response.hex()}")
+                # logger.info(f"F1 {frame1Request.hex()} {frame1Response.hex()}")
+                # logger.info(f"F2 {frame2Request.hex()} {frame2Response.hex()}")
                 
-                if self.isProcessingFrame1 and len(self.frame1Request)>0 and len(self.frame1Response)>0:
-                    start_address, data = self.process_optimized(self.frame1Request, self.frame1Response, slave_address)
-                if not self.isProcessingFrame1 and len(self.frame2Request)>0 and len(self.frame2Response)>0:
-                    start_address, data = self.process_optimized(self.frame2Request, self.frame2Response, slave_address)
+                if isProcessingFrame1 and len(frame1Request)>0 and len(frame1Response)>0:
+                    start_address, data = self.process_optimized(frame1Request, frame1Response, slave_address)
+                if not isProcessingFrame1 and len(frame2Request)>0 and len(frame2Response)>0:
+                    start_address, data = self.process_optimized(frame2Request, frame2Response, slave_address)
 
                 if start_address=='2000':
                     total_data = data
@@ -148,7 +147,7 @@ class SerialSnooper:
                     total_data = OrderedDict()
 
             else:
-                self.frameBuffer += message
+                frameBuffer += message
 
     def process_optimized(self, request, response, slave_address):
         logger.info(f'Processing request={request.hex()} response={response.hex()}')
