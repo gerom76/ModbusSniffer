@@ -70,6 +70,13 @@ class SerialSnooper:
         crc = message[size - 2 : size]
         crc_val = (int(crc[0]) << 8) + int(crc[1])
         return checkCRC(message[0:size-2], crc_val)
+    
+    def decode_request_message(message: bytearray):
+        slave_adr = int(message[0])
+        func_code = int(message[1])
+        start_address = (message[2:4]).hex()
+        quantity = (message[4:6]).hex()
+        return slave_adr, func_code, start_address, quantity
 
     def extract_payload(data: bytearray, byte_count: int):
         payload = []
