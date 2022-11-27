@@ -7,18 +7,13 @@ utilities.
 * PayloadDecoder
 """
 import logging
-import struct
 import unittest
 
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ParameterException
 from pymodbus.payload import BinaryPayloadBuilder, BinaryPayloadDecoder
-from pymodbus.utilities import (
-    ModbusTransactionState,
-    checkCRC,
-    computeCRC,
-    hexlify_packets,
-)
+
+from engine.serial_snooper import SerialSnooper
 logger = logging.getLogger()
 
 # ---------------------------------------------------------------------------#
@@ -286,44 +281,38 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         """Test the request 1 decoder functionality"""
         request1 = '0104200000527A37'
         print(request1)
-        data = bytearray.fromhex(request1)
-        print(data)
-        slave_adr = int(data[0])
+        message = bytearray.fromhex(request1)
+        print(message)
+        slave_adr = int(message[0])
         self.assertEqual(slave_adr, 1)
-        func_code = int(data[1])
+        func_code = int(message[1])
         self.assertEqual(func_code, 4)
-        start_address = (data[2:4]).hex()
+        start_address = (message[2:4]).hex()
         self.assertEqual(start_address, '2000')
-        quantity = (data[4:6]).hex()
+        quantity = (message[4:6]).hex()
         self.assertEqual(quantity, '0052')
-        size = len(data)
-        crc = data[size - 2 : size]
-        crc_val = (int(crc[0]) << 8) + int(crc[1])
-        is_valid = checkCRC(data[0:size-2], crc_val)
+        is_valid = SerialSnooper.check_message(message)
         self.assertEqual(is_valid, True)
 
     def test_payload_decoder_raw_response1(self):
         """Test the response 1 decoder functionality"""
         response = '0104A4458218004582180045821800451640004516400045164000415000004130000041400000C1300000C130000041100000C110000041A8000041900000C180000041980000429A000041C8000041C8000041C80000C3110000C3DC000043B38000C3B780004493C0004539D000448D0000000000000000000000000000000000000000000000000000459C30004110000047693B00000000000000000000000000000000002CF7'
         print(response)
-        data = bytearray.fromhex(response)
-        print(data)
-        slave_adr = int(data[0])
+        message = bytearray.fromhex(response)
+        print(message)
+        slave_adr = int(message[0])
         self.assertEqual(slave_adr, 1)
-        func_code = int(data[1])
+        func_code = int(message[1])
         self.assertEqual(func_code, 4)
-        byte_count = int(data[2])
+        byte_count = int(message[2])
         self.assertEqual(byte_count, 164)
-        size = len(data)
-        crc = data[size - 2 : size]
-        crc_val = (int(crc[0]) << 8) + int(crc[1])
-        is_valid = checkCRC(data[0:size-2], crc_val)
+        is_valid = SerialSnooper.check_message(message)
         self.assertEqual(is_valid, True)
         # x = [b"\x12", b"\x34", b"\x56", b"\x78"] 
         # bytes(data[0:1]) ->  b'\x01'
         # bytes(data[1:2]) -> b'\x04'
         
-        payload = self.convert_to_payload(data, byte_count)
+        payload = self.convert_to_payload(message, byte_count)
         
         builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
         registers = builder.to_registers()
@@ -332,7 +321,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
 
         for i in range(int(byte_count/4)-2):
-            entry = data[(i*4+3):(i*4+7)]
+            entry = message[(i*4+3):(i*4+7)]
             print(f'{i}: {bytes(entry)} {entry.hex()} {decoder.decode_32bit_float()}')
         decoder.reset()
         for i in range(int(byte_count/4)):
@@ -406,41 +395,35 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         """Test the request 2 decoder functionality"""
         request = '0104101E003C94DD'
         print(request)
-        data = bytearray.fromhex(request)
-        print(data)
-        slave_adr = int(data[0])
+        message = bytearray.fromhex(request)
+        print(message)
+        slave_adr = int(message[0])
         self.assertEqual(slave_adr, 1)
-        func_code = int(data[1])
+        func_code = int(message[1])
         self.assertEqual(func_code, 4)
-        start_address = (data[2:4]).hex()
+        start_address = (message[2:4]).hex()
         self.assertEqual(start_address, '101e')
-        quantity = (data[4:6]).hex()
+        quantity = (message[4:6]).hex()
         self.assertEqual(quantity, '003c')
-        size = len(data)
-        crc = data[size - 2 : size]
-        crc_val = (int(crc[0]) << 8) + int(crc[1])
-        is_valid = checkCRC(data[0:size-2], crc_val)
+        is_valid = SerialSnooper.check_message(message)
         self.assertEqual(is_valid, True)
         
     def test_payload_decoder_raw_response2(self):
         """Test the response 2 decoder functionality"""
         response = '010478415170A4415170A400000000000000000000000041251EB841251EB8000000000000000000000000400AE148400AE148000000000000000000000000422B51EC422B51EC0000000000000000000000003F3333333F3333330000000000000000000000003F0F5C293F0F5C290000000000000000000000004FF2'
         print(response)
-        data = bytearray.fromhex(response)
-        print(data)
-        slave_adr = int(data[0])
+        message = bytearray.fromhex(response)
+        print(message)
+        slave_adr = int(message[0])
         self.assertEqual(slave_adr, 1)
-        func_code = int(data[1])
+        func_code = int(message[1])
         self.assertEqual(func_code, 4)
-        byte_count = int(data[2])
+        byte_count = int(message[2])
         self.assertEqual(byte_count, 120)
-        size = len(data)
-        crc = data[size - 2 : size]
-        crc_val = (int(crc[0]) << 8) + int(crc[1])
-        is_valid = checkCRC(data[0:size-2], crc_val)
+        is_valid = SerialSnooper.check_message(message)
         self.assertEqual(is_valid, True)
         
-        payload = self.convert_to_payload(data, byte_count)
+        payload = self.convert_to_payload(message, byte_count)
         
         builder = BinaryPayloadBuilder(payload, repack=True, byteorder=Endian.Big, wordorder=Endian.Big)
         registers = builder.to_registers()
@@ -449,7 +432,7 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         decoder = BinaryPayloadDecoder.fromRegisters(registers, byteorder=Endian.Big, wordorder=Endian.Big)
 
         for i in range(int(byte_count/4)):
-            entry = data[(i*4+3):(i*4+7)]
+            entry = message[(i*4+3):(i*4+7)]
             print(f'{i}: {bytes(entry)} {entry.hex()} {decoder.decode_32bit_float()}')
         
         decoder.reset()

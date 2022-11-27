@@ -5,6 +5,9 @@ from pymodbus.factory import ClientDecoder, ServerDecoder
 from api.web_app import update_sniffing_quality
 from engine.chint666_adapter import Chint666Adapter
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
+from pymodbus.utilities import (
+    checkCRC,
+)
 #import pymodbus
 #from pymodbus.transaction import ModbusRtuFramer
 #from pymodbus.utilities import hexlify_packets
@@ -59,6 +62,12 @@ class SerialSnooper:
 
 ###################################################
 # https://github.com/eterey/pymodbus3/blob/master/examples/contrib/message-parser.py
+
+    def check_message(message: bytearray):
+        size = len(message)
+        crc = message[size - 2 : size]
+        crc_val = (int(crc[0]) << 8) + int(crc[1])
+        return checkCRC(message[0:size-2], crc_val)
 
     def run_method_optimized(self, slave_address):
         logger.warning(f"Starting method Optimized")
