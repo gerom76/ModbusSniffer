@@ -74,9 +74,8 @@ class SerialSnooper:
         return readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError
 
     def commit_lazy_statistics(self):
-        # if self.processedFramesCounter==0 or self.processedFramesCounter % 100 == 0:
         readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError = self.get_statistics()
-        logger.warn(f"commit_lazy_statistics: {readingDate} {processedFramesCounter} {sniffingRate} {errorRate}")
+        # logger.warn(f"commit_lazy_statistics: {readingDate} {processedFramesCounter} {sniffingRate} {errorRate}")
         update_statistics(readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError)
 ###################################################
 # https://github.com/eterey/pymodbus3/blob/master/examples/contrib/message-parser.py
@@ -144,6 +143,7 @@ class SerialSnooper:
         rt.start()
         while True:
             try:
+                time.sleep(float(1)/self.baud) # to reduce cpu stress
                 message = self.read_in_waiting()
                 if len(message) <= 0: continue
                 self.processedFramesCounter += 1
@@ -176,8 +176,7 @@ class SerialSnooper:
                     self.interceptedResponseFramesCounter += 1
                     
                     if len(start_address)>0 and len(total_data)>22:
-                        logger.warn(f'Ready to pass data: {total_data}')
-                        time.sleep(float(1)/self.baud)
+                        logger.debug(f'Ready to pass data: {total_data}')
                         update_smart_meter(total_data)
                         total_data = OrderedDict()
 
