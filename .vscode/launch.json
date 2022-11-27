@@ -25,7 +25,7 @@
       "type": "python",
       "request": "launch",
       "program": "modbus_sniffer.py",
-      "args": ["/dev/ttyUSB0"],
+      "args": ["/dev/ttyUSB0", "9600", "1", "optimized"],
       "console": "integratedTerminal",
       "justMyCode": false
     }

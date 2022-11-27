@@ -1,3 +1,4 @@
+from collections import Counter, OrderedDict
 import logging
 import serial
 from pymodbus.factory import ClientDecoder, ServerDecoder
@@ -109,6 +110,8 @@ class SerialSnooper:
     # Optimized flow for string of interlaced request and responses:
     def run_method_optimized(self, slave_address):
         logger.warning(f"Starting Optimized Method")
+        total_data: OrderedDict = OrderedDict()
+        start_address = ''
         while True:
             message = self.read_in_waiting()
             if len(message) <= 0: continue
@@ -131,9 +134,18 @@ class SerialSnooper:
                 # logger.info(f"F2 {self.frame2Request.hex()} {self.frame2Response.hex()}")
                 
                 if self.isProcessingFrame1 and len(self.frame1Request)>0 and len(self.frame1Response)>0:
-                    self.process_optimized(self.frame1Request, self.frame1Response, slave_address)
+                    start_address, data = self.process_optimized(self.frame1Request, self.frame1Response, slave_address)
                 if not self.isProcessingFrame1 and len(self.frame2Request)>0 and len(self.frame2Response)>0:
-                    self.process_optimized(self.frame2Request, self.frame2Response, slave_address)
+                    start_address, data = self.process_optimized(self.frame2Request, self.frame2Response, slave_address)
+
+                if start_address=='2000':
+                    total_data = data
+                elif start_address=='101e':
+                    total_data.update(data)
+                
+                if len(start_address)>0 and len(total_data)>22:
+                    logger.info(f'Ready to pass data: {total_data}')
+                    total_data = OrderedDict()
 
             else:
                 self.frameBuffer += message
@@ -159,9 +171,10 @@ class SerialSnooper:
                         data = chint666Adaper.decode_electricity()
                     elif start_address=='101e':
                         data = chint666Adaper.decode_power()
-                    if not data:
-                        logger.error(f'Data: {data}')
-
+                    if data:
+                        return start_address, data
+                    else:
+                        logger.error(f'Invalid data: {data}')
         except Exception as ex:
             logger.error(f'Processing exception={ex} Request={request} Response={response}')
             pass
