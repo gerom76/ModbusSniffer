@@ -114,7 +114,7 @@ def update_statistics(readingDate, errorCounter, processedFramesCounter, errorRa
             db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
         entry = sm[0]
         entry.em_ErrRate = errorRate
-        entry.em_LastErr = lastError
+        # entry.em_LastErr = lastError #sqlalchemy.exc.InterfaceError: (sqlite3.InterfaceError) Error binding parameter 5 - probably unsupported type.
         entry.em_Queries = processedFramesCounter
         entry.em_RdTime = readingDate
         entry.em_TotErr = errorCounter
