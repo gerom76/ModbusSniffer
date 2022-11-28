@@ -4,7 +4,7 @@ import logging
 import serial
 import time
 from pymodbus.factory import ClientDecoder, ServerDecoder
-from api.web_app import update_smart_meter, update_smart_meter_legacy, update_statistics
+from api.web_app import update_smart_meter
 from engine.chint666adapter import Chint666LegacyAdapter, Chint666TunedAdapter
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 # from pymodbus.transaction import ModbusRtuFramer
@@ -26,6 +26,7 @@ class SerialSnooper:
     interceptedResponseFramesCounter = 0
     errorCounter = 0
     lastError = ''
+    smartMeterBuffer: OrderedDict = OrderedDict()
     
     def __init__(self, port, baud=9600, slave_address=1):
         logger.debug('SerialSnooper.__init__')
@@ -69,15 +70,22 @@ class SerialSnooper:
             sniffingRate = ((self.interceptedResponseFramesCounter) / self.processedFramesCounter) * 100
             errorRate = ((self.errorCounter) / self.processedFramesCounter) * 100
         
-        errorCounter = self.errorCounter
-        processedFramesCounter = self.processedFramesCounter
-        lastError = self.lastError
-        return readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError
+        # lastError #sqlalchemy.exc.InterfaceError: (sqlite3.InterfaceError) Error binding parameter 5 - probably unsupported type.
+        statistics = OrderedDict(
+            [
+                ("em_ErrRate", errorRate),
+                ("em_LastErr", ''),
+                ("em_Queries", self.processedFramesCounter),
+                ("em_RdTime", readingDate),
+                ("em_TotErr", self.errorCounter),
+                ("em_SniffingRate", sniffingRate),
+            ]); 
+        return statistics
 
-    def commit_lazy_statistics(self):
-        readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError = self.get_statistics()
-        # logger.warn(f"commit_lazy_statistics: {readingDate} {processedFramesCounter} {sniffingRate} {errorRate}")
-        update_statistics(readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError)
+    def commit_lazy_smartMeter_db_update(self):
+        statistics = self.get_statistics()
+        self.smartMeterBuffer.update(statistics)
+        update_smart_meter(self.smartMeterBuffer)
 ###################################################
 # https://github.com/eterey/pymodbus3/blob/master/examples/contrib/message-parser.py
 
@@ -140,7 +148,7 @@ class SerialSnooper:
         frame2Response =  bytearray()
         total_data: OrderedDict = OrderedDict()
         start_address = ''
-        rt = RepeatedTimer(1, self.commit_lazy_statistics)
+        rt = RepeatedTimer(1, self.commit_lazy_smartMeter_db_update)
         rt.start()
         while True:
             try:
@@ -222,7 +230,7 @@ class SerialSnooper:
         read_size = 128
         self.reset_statistics()
         logger.warning(f"Starting method Generic: read_size:{read_size}")
-        rt = RepeatedTimer(1, self.commit_lazy_statistics)
+        rt = RepeatedTimer(1, self.commit_lazy_smartMeter_db_update)
         rt.start()
         while True:
             try:
@@ -286,9 +294,11 @@ class SerialSnooper:
         logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
         if count == 60:
             power_data = self.chint666LegacyAdapter.decode_power(msg.registers)
-            update_smart_meter_legacy(power_data)
+            #update_smart_meter_legacy(power_data)
+            self.smartMeterBuffer.update(power_data)
         elif count == 82:
             electricity_data = self.chint666LegacyAdapter.decode_electricity(msg.registers)
-            update_smart_meter_legacy(electricity_data)
+            #update_smart_meter_legacy(electricity_data)
+            self.smartMeterBuffer.update(electricity_data)
         else:
             logger.warning(f'Unknown count {count}')

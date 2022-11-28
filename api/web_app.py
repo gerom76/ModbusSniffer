@@ -106,27 +106,3 @@ def update_smart_meter(dictData):
         for name, value in iter(dictData.items()):
             setattr(entry, name, value)
         db.session.commit()
-
-def update_statistics(readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError):
-    logger.debug(f'update_statistics:{readingDate, errorCounter, processedFramesCounter, errorRate, sniffingRate, lastError}')
-    with app.app_context():
-        sm = db.session.execute(
-            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
-        entry = sm[0]
-        entry.em_ErrRate = errorRate
-        # entry.em_LastErr = lastError #sqlalchemy.exc.InterfaceError: (sqlite3.InterfaceError) Error binding parameter 5 - probably unsupported type.
-        entry.em_Queries = processedFramesCounter
-        entry.em_RdTime = readingDate
-        entry.em_TotErr = errorCounter
-        entry.em_SniffingRate = sniffingRate
-        db.session.commit()
-
-def update_smart_meter_legacy(dictData):
-    logger.debug(f'update_smart_meter_legacy:{dictData}')
-    with app.app_context():
-        sm = db.session.execute(
-            db.select(SmartMeter).filter_by(em_Type=DTSU666)).one()
-        entry = sm[0]
-        for name, value in iter(dictData.items()):
-            setattr(entry, name, value)
-        db.session.commit()
