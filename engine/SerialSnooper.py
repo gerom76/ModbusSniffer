@@ -5,7 +5,7 @@ import serial
 import time
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from api.web_app import update_smart_meter
-from engine.chint666adapter import Chint666LegacyAdapter, Chint666TunedAdapter
+from engine.chint666adapter import Chint666TunedAdapter
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 # from pymodbus.transaction import ModbusRtuFramer
 from pymodbus.utilities import (
@@ -35,7 +35,7 @@ class SerialSnooper:
         self.slave_address = slave_address
         self.serial = serial.Serial(port, baud, timeout=float(
             self.kByteLength*self.kMaxReadSize)/baud)
-        self.chint666LegacyAdapter = Chint666LegacyAdapter()
+        self.chint666Adapter = Chint666TunedAdapter()
         self.client_framer = ModbusRtuFramer(decoder=ClientDecoder())
         self.server_framer = ModbusRtuFramer(decoder=ServerDecoder())
         
@@ -208,11 +208,10 @@ class SerialSnooper:
                 payload = SerialSnooper.extract_payload(response, byte_count)
                 decoder = SerialSnooper.load_decoder(payload)
                 SerialSnooper.log_registry(response, byte_count, decoder)
-                chint666Adaper = Chint666TunedAdapter()
                 if start_address=='2000':
-                    data = chint666Adaper.decode_electricity(decoder)
+                    data = self.chint666Adapter.decode_electricity(decoder)
                 elif start_address=='101e':
-                    data = chint666Adaper.decode_power(decoder)
+                    data = self.chint666Adapter.decode_power(decoder)
                 if data:
                     return start_address, data
                 else:
@@ -286,11 +285,12 @@ class SerialSnooper:
         data = ' '.join([str(i)+":"+hex(value) for i, value in enumerate(msg.registers)])
         count = len(msg.registers)
         logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
+        decoder = SerialSnooper.prepare_decoder(msg.registers)
         if count == 60:
-            power_data = self.chint666LegacyAdapter.decode_power(msg.registers)
+            power_data = self.chint666Adapter.decode_power(decoder)
             self.smartMeterBuffer.update(power_data)
         elif count == 82:
-            electricity_data = self.chint666LegacyAdapter.decode_electricity(msg.registers)
+            electricity_data = self.chint666Adapter.decode_electricity(decoder)
             self.smartMeterBuffer.update(electricity_data)
         else:
             logger.warning(f'Unknown count {count}')
