@@ -118,7 +118,6 @@ def test_client_decode_rtu_data(rtu_framer, data):  # pylint: disable=redefined-
 def test_server_decode_rtu_data(rtu_framer, data):  # pylint: disable=redefined-outer-name
     """Test server decode rtu."""
     sut = ModbusRtuFramer(decoder=ServerDecoder())
-    decoded2 = sut.decode(data)
     decoded = sut.decode_data(data)
     assert isinstance(decoded, dict)  # nosec
     if decoded:
