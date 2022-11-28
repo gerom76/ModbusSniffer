@@ -248,9 +248,6 @@ class SerialSnooper:
             message, self.master_packet_callback, unit=slave_address, single=True)
 
     def master_packet_callback(self, *args, **kwargs):
-        # logger.debug(f"responseBuffer: {self.responseBuffer.hex()}")
-        # # TODO: start recording for this buffer till next master packet
-        # self.responseBuffer = bytearray()
         arg = 0
         address = 'unknown'
         count = 0

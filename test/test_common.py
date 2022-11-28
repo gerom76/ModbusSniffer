@@ -9,6 +9,10 @@ def test_dictionary():  # pylint: disable=redefined-outer-name
     """Test dictionary."""
     sut = OrderedDict([("A", 1), ("B", 2), ("C", 3)])
     dict2 = OrderedDict([("A", 3), ("C", -1)])
+    dict3 = OrderedDict([("D", 7), ("E", 5)])
+    dict4 = OrderedDict([("A", 4), ("E", 5)])
     sut.update(dict2)
-    assert sut["A"] == 3
-
+    sut.update(dict3)
+    sut.update(dict4)
+    assert sut["A"] == 4
+    assert sut["E"] == 5

@@ -275,7 +275,6 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         """Test the request 1 decoder functionality"""
         request1 = '0104200000527A37'
         print(request1)
-        # TODO: wrap into request_decode_header function
         message = bytearray.fromhex(request1)
         print(message)
         slave_adr, func_code, start_address, quantity = SerialSnooper.decode_request_message(message)
@@ -290,7 +289,6 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         """Test the response 1 decoder functionality"""
         response = '0104A4458218004582180045821800451640004516400045164000415000004130000041400000C1300000C130000041100000C110000041A8000041900000C180000041980000429A000041C8000041C8000041C80000C3110000C3DC000043B38000C3B780004493C0004539D000448D0000000000000000000000000000000000000000000000000000459C30004110000047693B00000000000000000000000000000000002CF7'
         print(response)
-        # TODO: wrap into response_decode_header function
         message = bytearray.fromhex(response)
         print(message)
         slave_adr, func_code, byte_count = SerialSnooper.decode_response_message(message)
@@ -306,8 +304,8 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         payload = SerialSnooper.extract_payload(message, byte_count)
         decoder = SerialSnooper.load_decoder(payload)
         SerialSnooper.log_registry(message, byte_count, decoder)
-        chint666Adaper = Chint666TunedAdapter(decoder)
-        data = chint666Adaper.decode_electricity()
+        chint666Adaper = Chint666TunedAdapter()
+        data = chint666Adaper.decode_electricity(decoder)
         print(data)
         # decoder.reset()
         # for i in range(int(byte_count/4)):
@@ -384,8 +382,8 @@ class ModbusPayloadUtilityTests(unittest.TestCase):
         payload = SerialSnooper.extract_payload(message, byte_count)
         decoder = SerialSnooper.load_decoder(payload)
         SerialSnooper.log_registry(message, byte_count, decoder)
-        chint666Adaper = Chint666TunedAdapter(decoder)
-        data = chint666Adaper.decode_power()
+        chint666Adaper = Chint666TunedAdapter()
+        data = chint666Adaper.decode_power(decoder)
         print(data)
         # decoder.reset()
         # for i in range(int(byte_count/4)):
