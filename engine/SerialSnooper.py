@@ -177,16 +177,17 @@ class SerialSnooper:
                     
                     if len(start_address)>0 and len(total_data)>22:
                         logger.debug(f'Ready to pass data: {total_data}')
+                        # TODO: slow down updates (measure no of updates per sec)
                         update_smart_meter(total_data)
                         total_data = OrderedDict()
 
                 else:
                     frameBuffer += message
             except Exception as e:
-                logger.error(f'run_method_generic: error:{e}')
+                logger.error(f'run_method_optimized: error:{e}')
                 self.errorCounter += 1
                 self.lastError = e
-                pass
+                pass # TODO: break program after 10 fails: ERROR [SerialSnooper.run_method_generic:233] run_method_generic: error:device reports readiness to read but returned no data (device disconnected or multiple access on port?)
         rt.stop()
 
     def process_optimized(self, request, response, slave_address):
