@@ -4,7 +4,7 @@ import logging
 import serial
 import time
 from pymodbus.factory import ClientDecoder, ServerDecoder
-from api.web_app import update_smart_meter, update_statistics
+from api.web_app import update_smart_meter, update_smart_meter_legacy, update_statistics
 from engine.Chint666Adapter import Chint666LegacyAdapter, Chint666TunedAdapter
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import (
@@ -280,4 +280,17 @@ class SerialSnooper:
                 '.')[-1].strip("'><").replace("Response", "")
             arg += 1
             logger.info(f"Slave Response-> ID: {msg.unit_id}, arg({arg}/{len(args)}) Function: {func_name}: {msg.function_code}")
-            self.chint666LegacyAdapter.process_meter_response(msg)
+            self.process_meter_response(msg)
+
+    def process_meter_response(self, msg):
+        data = ' '.join([str(i)+":"+hex(value) for i, value in enumerate(msg.registers)])
+        count = len(msg.registers)
+        logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
+        if count == 60:
+            power_data = self.chint666LegacyAdapter.decode_power(msg.registers)
+            update_smart_meter_legacy(power_data)
+        elif count == 82:
+            electricity_data = self.chint666LegacyAdapter.decode_electricity(msg.registers)
+            update_smart_meter_legacy(electricity_data)
+        else:
+            logger.warning(f'Unknown count {count}')

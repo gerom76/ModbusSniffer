@@ -89,19 +89,6 @@ class Chint666LegacyAdapter:
     def __exit__(self):
         self.close()
 
-    def process_meter_response(self, msg):
-        data = ' '.join([str(i)+":"+hex(value) for i, value in enumerate(msg.registers)])
-        count = len(msg.registers)
-        logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
-        if count == 60:
-            power_data = self.decode_power(msg.registers)
-            update_smart_meter_legacy(power_data)
-        elif count == 82:
-            electricity_data = self.decode_electricity(msg.registers)
-            update_smart_meter_legacy(electricity_data)
-        else:
-            logger.warning(f'Unknown count {count}')
-
     def log_decode_32bit_float(self, decoder: BinaryPayloadDecoder, count):
         decoder.reset()
         for i in range(count):
@@ -155,7 +142,6 @@ class Chint666LegacyAdapter:
 
         # self.log_decode_32bit_float(decoder,41)
         return dict
-
 
     def decode_power(self, registers):
         decoder = BinaryPayloadDecoder.fromRegisters(
