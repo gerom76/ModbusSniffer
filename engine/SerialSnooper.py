@@ -187,7 +187,7 @@ class SerialSnooper:
                 logger.error(f'run_method_optimized: error:{e}')
                 self.errorCounter += 1
                 self.lastError = e
-                pass # TODO: break program after 10 fails: ERROR [SerialSnooper.run_method_generic:233] run_method_generic: error:device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+                pass # TODO: break program after 10 fails: ERROR [SerialSnooper.run_method_generic:233] run_method_generic: error:device reports readiness to read but returned no data (device disconnected or multiple access on port?) - when usb dongle dettached!
         rt.stop()
 
     def process_optimized(self, request, response, slave_address):
@@ -234,7 +234,7 @@ class SerialSnooper:
                 logger.error(f'run_method_generic: error:{e}')
                 self.errorCounter += 1
                 self.lastError = e
-                pass
+                pass # TODO: break program after 10 fails: ERROR [SerialSnooper.run_method_generic:233] run_method_generic: error:device reports readiness to read but returned no data (device disconnected or multiple access on port?) - when usb dongle dettached!
         rt.stop()
     
     def process_generic(self, message, slave_address):
