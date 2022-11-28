@@ -5,7 +5,7 @@ import serial
 import time
 from pymodbus.factory import ClientDecoder, ServerDecoder
 from api.web_app import update_smart_meter, update_smart_meter_legacy, update_statistics
-from engine.Chint666Adapter import Chint666LegacyAdapter, Chint666TunedAdapter
+from engine.chint666adapter import Chint666LegacyAdapter, Chint666TunedAdapter
 from pymodbus.framer.rtu_framer import ModbusRtuFramer
 from pymodbus.utilities import (
     checkCRC,
@@ -205,11 +205,11 @@ class SerialSnooper:
                 payload = SerialSnooper.extract_payload(response, byte_count)
                 decoder = SerialSnooper.load_decoder(payload)
                 SerialSnooper.log_registry(response, byte_count, decoder)
-                chint666Adaper = Chint666TunedAdapter(decoder)
+                chint666Adaper = Chint666TunedAdapter()
                 if start_address=='2000':
-                    data = chint666Adaper.decode_electricity()
+                    data = chint666Adaper.decode_electricity(decoder)
                 elif start_address=='101e':
-                    data = chint666Adaper.decode_power()
+                    data = chint666Adaper.decode_power(decoder)
                 if data:
                     return start_address, data
                 else:
