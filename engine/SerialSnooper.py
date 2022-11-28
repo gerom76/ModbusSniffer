@@ -146,8 +146,8 @@ class SerialSnooper:
         frame2Request =  bytearray()
         frame1Response =  bytearray()
         frame2Response =  bytearray()
-        total_data: OrderedDict = OrderedDict()
         start_address = ''
+        data = OrderedDict()
         rt = RepeatedTimer(1, self.commit_lazy_smartMeter_db_update)
         rt.start()
         while True:
@@ -169,27 +169,21 @@ class SerialSnooper:
                         frame1Response = frameBuffer
                         isProcessingFrame1 = True
                     frameBuffer = bytearray()
-                                        
-                    # logger.info(f"F1 {frame1Request.hex()} {frame1Response.hex()}")
-                    # logger.info(f"F2 {frame2Request.hex()} {frame2Response.hex()}")
+
                     
                     if isProcessingFrame1 and len(frame1Request)>0 and len(frame1Response)>0:
                         start_address, data = self.process_optimized(frame1Request, frame1Response, slave_address)
                     if not isProcessingFrame1 and len(frame2Request)>0 and len(frame2Response)>0:
                         start_address, data = self.process_optimized(frame2Request, frame2Response, slave_address)
 
-                    if start_address=='2000':
-                        total_data = data
-                    elif start_address=='101e':
-                        total_data.update(data)
+                    self.smartMeterBuffer.update(data)
                     self.interceptedResponseFramesCounter += 1
                     
-                    if len(start_address)>0 and len(total_data)>22:
-                        logger.debug(f'Ready to pass data: {total_data}')
+                    if len(start_address)>0 and len(self.smartMeterBuffer)>22:
+                        logger.debug(f'Ready to pass data: {self.smartMeterBuffer}')
                         # TODO: slow down updates (measure no of updates per sec)
-                        update_smart_meter(total_data)
-                        total_data = OrderedDict()
-
+                        # update_smart_meter(total_data)
+                        # total_data = OrderedDict()
                 else:
                     frameBuffer += message
             except Exception as e:
@@ -294,11 +288,9 @@ class SerialSnooper:
         logger.debug(f'Processing meter: {msg} ([{count}]) \n{data}\n{msg.registers}')
         if count == 60:
             power_data = self.chint666LegacyAdapter.decode_power(msg.registers)
-            #update_smart_meter_legacy(power_data)
             self.smartMeterBuffer.update(power_data)
         elif count == 82:
             electricity_data = self.chint666LegacyAdapter.decode_electricity(msg.registers)
-            #update_smart_meter_legacy(electricity_data)
             self.smartMeterBuffer.update(electricity_data)
         else:
             logger.warning(f'Unknown count {count}')
