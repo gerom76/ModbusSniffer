@@ -1,0 +1,14 @@
+[Unit]
+Description=Modbus Sniffer
+After=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/srv/modbus-sniffer
+ExecStart=/bin/sh -c 'cd /srv/modbus-sniffer/ && python3.9 -m venv . && source bin/activate && python modbus_sniffer.py /dev/ttyUSB0 9600 1 generic'
+RestartForceExitStatus=100
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
