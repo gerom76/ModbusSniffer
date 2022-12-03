@@ -52,6 +52,23 @@ sudo service modbus-sniffer-daemon install
 sudo service modbus-sniffer-daemon start
 sudo service modbus-sniffer-daemon stop
 -----------------------------------------------------
+systemctl:
+
+https://community.home-assistant.io/t/autostart-using-systemd/199497
+
+sudo systemctl --system daemon-reload
+sudo systemctl enable modbus-sniffer@homeassistant
+sudo systemctl start modbus-sniffer@homeassistant
+
+sudo systemctl status modbus-sniffer@homeassistant
+
+sudo systemctl restart modbus-sniffer@homeassistant
+
+
+sudo journalctl -f -u modbus-sniffer@homeassistant | grep -i 'error'
+
+
+-------------------------------------------------------
 
 Start Homassistant service:
 
