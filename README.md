@@ -18,6 +18,8 @@ usbipd wsl attach --busid 2-11
 linux:
 sudo chmod 666 /dev/ttyUSB0
 
+------------------------------------------------------
+https://www.waveshare.com/wiki/USB_TO_RS485_(B)
 
 -----------------------------------------------------
 run in background:
