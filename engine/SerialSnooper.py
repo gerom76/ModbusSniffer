@@ -152,7 +152,7 @@ class SerialSnooper:
         rt.start()
         while True:
             try:
-                time.sleep(float(10)/self.baud) # to reduce cpu stress
+                time.sleep(float(500)/self.baud) # to reduce cpu stress
                 message = self.read_in_waiting()
                 if len(message) <= 0: continue
                 self.processedFramesCounter += 1
