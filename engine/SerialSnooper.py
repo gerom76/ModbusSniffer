@@ -156,10 +156,10 @@ class SerialSnooper:
                 message = self.read_in_waiting()
                 if len(message) <= 0: continue
                 self.processedFramesCounter += 1
-                logger.debug(f"message[{len(message)}]: {message.hex()}")
+                # logger.debug(f"message[{len(message)}]: {message.hex()}")
                 
                 if len(message)==8:
-                    logger.debug(f"request (current): {message.hex()}")
+                    # logger.debug(f"request (current): {message.hex()}")
                     if isProcessingFrame1:
                         frame1Request = message
                         frame2Response = frameBuffer
@@ -179,11 +179,8 @@ class SerialSnooper:
                     self.smartMeterBuffer.update(data)
                     self.interceptedResponseFramesCounter += 1
                     
-                    if len(start_address)>0 and len(self.smartMeterBuffer)>22:
-                        logger.debug(f'Ready to pass data: {self.smartMeterBuffer}')
-                        # TODO: slow down updates (measure no of updates per sec)
-                        # update_smart_meter(total_data)
-                        # total_data = OrderedDict()
+                    # if len(start_address)>0 and len(self.smartMeterBuffer)>22:
+                    #     logger.debug(f'Ready to pass data: {self.smartMeterBuffer}')
                 else:
                     frameBuffer += message
             except Exception as e:
@@ -194,7 +191,7 @@ class SerialSnooper:
         rt.stop()
 
     def process_optimized(self, request, response, slave_address):
-        logger.info(f'Processing request={request.hex()} response={response.hex()}')
+        # logger.info(f'Processing request={request.hex()} response={response.hex()}')
         is_valid = SerialSnooper.check_message(request)
         if is_valid:
             slave_adr, func_code, start_address, quantity = SerialSnooper.decode_request_message(request)
