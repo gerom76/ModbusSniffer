@@ -148,7 +148,7 @@ class SerialSnooper:
         frame2Response =  bytearray()
         start_address = ''
         data = OrderedDict()
-        rt = RepeatedTimer(1, self.commit_lazy_smartMeter_db_update)
+        rt = RepeatedTimer(2, self.commit_lazy_smartMeter_db_update)
         rt.start()
         while True:
             try:
