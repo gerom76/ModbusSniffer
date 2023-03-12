@@ -45,7 +45,7 @@ sudo cp -r ~/source/ContribRepos/ModbusSniffer/* /srv/modbus-sniffer/
 
 sudo -u homeassistant -H -s
 cd /srv/modbus-sniffer
-python3.9 -m venv .
+python3.10 -m venv .
 source bin/activate
 pip install -r requirements.txt
 
@@ -78,7 +78,7 @@ sudo service hass-daemon start
 
 
 ----------------------------------------------------
-/bin/python3.9 /home/adminus/source/ContribRepos/ModbusSniffer/modbus_sniffer.py /dev/ttyUSB0
+/bin/python3.10 /home/adminus/source/ContribRepos/ModbusSniffer/modbus_sniffer.py /dev/ttyUSB0
 
 
 
