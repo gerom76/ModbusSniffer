@@ -78,7 +78,17 @@ sudo service hass-daemon start
 
 
 ----------------------------------------------------
+cd /srv/modbus-sniffer/ 
+python3.9 -m venv . && source bin/activate && 
+python modbus_sniffer.py /dev/ttyACM0 9600 1 optimized
+
 /bin/python3.9 /home/adminus/source/ContribRepos/ModbusSniffer/modbus_sniffer.py /dev/ttyUSB0
 
+-------------------
+https://msadowski.github.io/linux-static-port/
+99-com.rules
 
+KERNEL=="ttyACM0", ATTRS{product}=="SONOFF Zigbee 3.0 USB Dongle Plus V2"
+
+KERNEL=="ttyACM1", ATTRS{product}=="USB Single Serial", ATTRS{serial}=="54D2072038"
 

@@ -150,6 +150,7 @@ class SerialSnooper:
         data = OrderedDict()
         rt = RepeatedTimer(2, self.commit_lazy_smartMeter_db_update)
         rt.start()
+        
         while True:
             try:
                 time.sleep(float(500)/self.baud) # to reduce cpu stress
