@@ -45,7 +45,7 @@ sudo cp -r ~/source/ContribRepos/ModbusSniffer/* /srv/modbus-sniffer/
 
 sudo -u homeassistant -H -s
 cd /srv/modbus-sniffer
-python3.9 -m venv .
+python3.10 -m venv .
 source bin/activate
 pip install -r requirements.txt
 
@@ -82,7 +82,6 @@ cd /srv/modbus-sniffer/
 python3.9 -m venv . && source bin/activate && 
 python modbus_sniffer.py /dev/ttyACM0 9600 1 optimized
 
-/bin/python3.9 /home/adminus/source/ContribRepos/ModbusSniffer/modbus_sniffer.py /dev/ttyUSB0
 
 -------------------
 https://msadowski.github.io/linux-static-port/

@@ -6,7 +6,7 @@ After=network-online.target
 Type=simple
 User=%i
 WorkingDirectory=/srv/modbus-sniffer
-ExecStart=/bin/bash -c 'cd /srv/modbus-sniffer/ && python3.9 -m venv . && source bin/activate && ./modbus-sniffer.sh'
+ExecStart=/bin/bash -c 'cd /srv/modbus-sniffer/ && python3.10 -m venv . && source bin/activate && ./modbus-sniffer.sh'
 RestartForceExitStatus=100
 Restart=on-failure
 
